@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <UseWpf>true</UseWpf>
+    <AssemblyName>Tarydium.CSVLINQPadDriver</AssemblyName>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageTags>linqpad-driver</PackageTags>
+  </PropertyGroup>
+  <PropertyGroup>
+    <DefineConstants>NETCORE</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="linqpad-samples\**" />
+    <EmbeddedResource Remove="linqpad-samples\**" />
+    <None Remove="linqpad-samples\**" />
+    <Page Remove="linqpad-samples\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="LINQPad.Reference" Version="1.*" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.8.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="ConnectionDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+  </ItemGroup>
+  <Target Name="PostBuild1" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy /i/y/s &quot;$(TargetDir)*.*&quot; &quot;%25LocalAppData%25\\LINQPad\\Drivers\\DataContext\\NetCore\\$(TargetName)&quot;" />
+  </Target>
+</Project>
