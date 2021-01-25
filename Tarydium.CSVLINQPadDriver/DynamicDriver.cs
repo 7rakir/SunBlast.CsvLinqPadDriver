@@ -1,13 +1,13 @@
-using LINQPad;
 using LINQPad.Extensibility.DataContext;
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Emit;
+using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace Tarydium.CSVLINQPadDriver
 {
@@ -31,6 +31,20 @@ namespace Tarydium.CSVLINQPadDriver
 
 		public override bool ShowConnectionDialog(IConnectionInfo cxInfo, ConnectionDialogOptions dialogOptions)
 		{
+			var dialog = new CommonOpenFileDialog()
+			{
+				IsFolderPicker = true,
+				EnsureFileExists = true,
+				DefaultFileName = "DB",
+				Title = "Select a folder containing the desired CSV files"
+			};
+			if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+			{
+				cxInfo.DisplayName = dialog.FileName;
+				return true;
+			}
+
+			return false;
 
 			return new ConnectionDialog(cxInfo).ShowDialog() == true;
 		}
@@ -38,50 +52,50 @@ namespace Tarydium.CSVLINQPadDriver
 		public override List<ExplorerItem> GetSchemaAndBuildAssembly(
 			IConnectionInfo cxInfo, AssemblyName assemblyToBuild, ref string nameSpace, ref string typeName)
 		{
-			string path = @"c:\Users\richard.sefr\Documents\db\";
+			string path = cxInfo.DisplayName;
 
-			var model = GetModel(path).ToArray();
+			string fileName = typeof(CsvParser.CsvReader).Assembly.Location;
+			LoadAssemblySafely(fileName);
 
-			AppendClassesToAssembly(assemblyToBuild, nameSpace, typeName, model);
+			var schema = new SchemaReader().GetSchema(path).ToArray();
 
-			return GetExplorerItems(model).ToList();
+			AppendClassesToAssembly(assemblyToBuild, nameSpace, typeName, schema);
+
+			return schema.Select(GetExplorerItem).ToList();
 		}
 
-		private ExplorerItem GetExplorerItem(DataFile file)
+		private static ExplorerItem GetExplorerItem(FileModel fileModel)
 		{
-			var item = new ExplorerItem(file.ClassName, ExplorerItemKind.QueryableObject, ExplorerIcon.Table)
+			return new ExplorerItem(fileModel.ClassName, ExplorerItemKind.QueryableObject, ExplorerIcon.Table)
 			{
 				IsEnumerable = true,
-				Children = file.Headers.Select(h => new ExplorerItem(h, ExplorerItemKind.Property, ExplorerIcon.Column)).ToList(),
+				Children = fileModel.Headers.Select(h => new ExplorerItem(h, ExplorerItemKind.Property, ExplorerIcon.Column)).ToList(),
 			};
-
-			return item;
 		}
 
-		private IEnumerable<DataFile> GetModel(string path)
-		{
-			var reader = new CsvReader();
 
-			return GetFiles(path).Select(f => new DataFile(reader, f));
-		}
-
-		private void AppendClassesToAssembly(AssemblyName assemblyToBuild, string nameSpace, string typeName, IEnumerable<DataFile> model)
+		private static void AppendClassesToAssembly(AssemblyName assemblyToBuild, string nameSpace, string typeName, IEnumerable<FileModel> schema)
 		{
 			var generator = new ClassGenerator();
 
 			var references = GetCoreFxReferenceAssemblies();
 
-			generator.Generate(assemblyToBuild, nameSpace, references, typeName, model);
+			var result = generator.Generate(assemblyToBuild, nameSpace, references, typeName, schema);
+
+			if (result.Success)
+			{
+				return;
+			}
+
+			LogError(result);
 		}
 
-		private IEnumerable<ExplorerItem> GetExplorerItems(IEnumerable<DataFile> model)
+		private static void LogError(EmitResult result)
 		{
-			return model.Select(GetExplorerItem);
-		}
+			var message = string.Join(Environment.NewLine,
+				result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).Select(d => d.GetMessage()));
 
-		private IEnumerable<string> GetFiles(string path)
-		{
-			return Directory.EnumerateFiles(path, "*.csv");
+			WriteToLog(message, "Tarydium");
 		}
 	}
 }

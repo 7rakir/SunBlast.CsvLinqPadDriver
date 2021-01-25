@@ -1,40 +1,37 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.CodeDom.Compiler;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
+using static Tarydium.CSVLINQPadDriver.RoslynExtensions;
 
 namespace Tarydium.CSVLINQPadDriver
 {
 	public class SyntaxTreeGenerator
 	{
-		private readonly string nameSpace;
-		private readonly string className;
-
-		public SyntaxTreeGenerator(string nameSpace, string className)
-		{
-			this.nameSpace = nameSpace;
-			this.className = className;
-		}
-
-		public SyntaxTree GetSyntaxTree(IEnumerable<DataFile> files)
+		public SyntaxTree GetSyntaxTree(string nameSpace, string className, IEnumerable<FileModel> schema)
 		{
 			var syntaxFactory = CompilationUnit();
 
 			var usingList = new[]
 			{
 				"System",
-				"System.Collections.Generic"
+				"System.Collections.Generic",
+				"System.IO",
+				"System.Linq",
+				"CsvParser"
 			}.Select(name => UsingDirective(ParseName(name))).ToArray();
 
 			syntaxFactory = syntaxFactory.AddUsings(usingList);
 
 			var classBuilder = new ContextClassBuilder(className);
 
-			foreach (var file in files)
+			foreach(var model in schema)
 			{
-				classBuilder.AddTable(file);
+				classBuilder.AddTable(model);
 			}
 
 			var members = classBuilder.Build().ToArray();
@@ -50,24 +47,21 @@ namespace Tarydium.CSVLINQPadDriver
 		{
 			private ClassDeclarationSyntax contextClass;
 
-			private List<ClassDeclarationSyntax> dataClasses = new List<ClassDeclarationSyntax>();
+			private readonly List<ClassDeclarationSyntax> dataClasses = new List<ClassDeclarationSyntax>();
 
 			public ContextClassBuilder(string className)
 			{
-				contextClass = ClassDeclaration(className)
-					.AddModifiers(Token(SyntaxKind.PublicKeyword));
+				contextClass = ContextClassGenerator.CreateClass(className);
 			}
 
-			public ContextClassBuilder AddTable(DataFile table)
+			public void AddTable(FileModel model)
 			{
-				dataClasses.Add(DataClassConstructor.CreateClass(table));
+				dataClasses.Add(DataClassGenerator.CreateClass(model));
 
-				var property = ContextClassConstructor.CreateProperty(table.ClassName);
-				var field = ContextClassConstructor.CreateField(table.ClassName);
+				var property = ContextClassGenerator.CreateProperty(model.ClassName);
+				var field = ContextClassGenerator.CreateField(model);
 
 				contextClass = contextClass.AddMembers(property, field);
-
-				return this;
 			}
 
 			public IEnumerable<ClassDeclarationSyntax> Build()
@@ -76,8 +70,14 @@ namespace Tarydium.CSVLINQPadDriver
 			}
 		}
 
-		private static class ContextClassConstructor
+		private static class ContextClassGenerator
 		{
+			public static ClassDeclarationSyntax CreateClass(string className)
+			{
+				return ClassDeclaration(className)
+					.AddModifiers(Token(SyntaxKind.PublicKeyword));
+			}
+
 			public static PropertyDeclarationSyntax CreateProperty(string propertyName)
 			{
 				return PropertyDeclaration(ParseTypeName($"IEnumerable<{propertyName}>"), propertyName)
@@ -90,52 +90,54 @@ namespace Tarydium.CSVLINQPadDriver
 								IdentifierName("Value"))));
 			}
 
-			public static FieldDeclarationSyntax CreateField(string fieldName)
+			public static FieldDeclarationSyntax CreateField(FileModel model)
 			{
-				var call = ImplicitArrayCreationExpression(
-					InitializerExpression(
-						SyntaxKind.ArrayInitializerExpression,
-						SingletonSeparatedList<ExpressionSyntax>(
-							ObjectCreationExpression(
-								IdentifierName(fieldName)))));
+				var readFileCall = GetCsvReaderCall(model);
 
-				var argumentList = ArgumentList(SeparatedList(new[]
-				{
-					Argument(ParenthesizedLambdaExpression(call))
-				}));
+				// field declaration and initialization
 
-				var objectCreation = ObjectCreationExpression(
-					Token(SyntaxKind.NewKeyword),
-					ParseTypeName($"Lazy<IEnumerable<{fieldName}>>"), argumentList, null);
+				var objectCreation = CreateConstructorCall($"Lazy<IEnumerable<{model.ClassName}>>")
+					.WithSingleArgument(ParenthesizedLambdaExpression(readFileCall));
 
 				var equalsClause = EqualsValueClause(objectCreation);
 
-				var variableDeclaration = VariableDeclaration(ParseTypeName($"Lazy<IEnumerable<{fieldName}>>"))
-					.AddVariables(VariableDeclarator($"_{fieldName}").WithInitializer(equalsClause));
+				var variableDeclaration = VariableDeclaration(ParseTypeName($"Lazy<IEnumerable<{model.ClassName}>>"))
+					.AddVariables(VariableDeclarator($"_{model.ClassName}").WithInitializer(equalsClause));
 
 				return FieldDeclaration(variableDeclaration).AddModifiers(Token(SyntaxKind.PrivateKeyword));
 			}
+
+			private static InvocationExpressionSyntax GetCsvReaderCall(FileModel model)
+			{
+				return InvocationExpression(MemberAccessExpression(
+						SyntaxKind.SimpleMemberAccessExpression,
+						IdentifierName("CsvReader"),
+						GenericName(Identifier("ReadFile")).WithSingleTypeArgument(IdentifierName(model.ClassName))))
+					.WithSingleArgument(CreateStringLiteral(model.FilePath));
+			}
 		}
 
-		private static class DataClassConstructor
+		private static class DataClassGenerator
 		{
-			public static ClassDeclarationSyntax CreateClass(DataFile file)
+			public static ClassDeclarationSyntax CreateClass(FileModel model)
 			{
-				var property = file.Headers.Select(header => CreateProperty("string", header)).ToArray();
+				if(!CodeGenerator.IsValidLanguageIndependentIdentifier(model.ClassName))
+				{
+					throw new ArgumentException($"Invalid name '{model.ClassName}'", model.ClassName);
+				}
 
-				return ClassDeclaration(file.ClassName)
+				var property = model.Headers.Select(header => CreateProperty("string", header)).ToArray();
+
+				return ClassDeclaration(model.ClassName)
 					.AddModifiers(Token(SyntaxKind.PublicKeyword))
 					.AddMembers(property);
 			}
 
-			/// public Type Name { get; set; }
 			private static PropertyDeclarationSyntax CreateProperty(string propertyType, string propertyName)
 			{
 				return PropertyDeclaration(ParseTypeName(propertyType), propertyName)
 					.AddModifiers(Token(SyntaxKind.PublicKeyword))
-					.AddAccessorListAccessors(
-						AccessorDeclaration(SyntaxKind.GetAccessorDeclaration),
-						AccessorDeclaration(SyntaxKind.SetAccessorDeclaration));
+					.AddAccessorListAccessors(AccessorDeclaration(SyntaxKind.GetAccessorDeclaration), AccessorDeclaration(SyntaxKind.SetAccessorDeclaration));
 			}
 		}
 	}

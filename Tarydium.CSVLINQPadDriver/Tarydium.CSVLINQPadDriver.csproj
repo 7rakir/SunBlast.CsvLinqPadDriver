@@ -1,13 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWpf>true</UseWpf>
     <AssemblyName>Tarydium.CSVLINQPadDriver</AssemblyName>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageTags>linqpad-driver</PackageTags>
+    <PackageTags>linqpaddriver</PackageTags>
+    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants>NETCORE</DefineConstants>
+    <Version>1.2.4</Version>
+    <Product>CSV LINQPad Driver</Product>
+    <Company>Tarydium</Company>
+    <Authors>Drakir</Authors>
+    <Description>Lightweight LINQPad Driver for CSV files.</Description>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="linqpad-samples\**" />
@@ -16,9 +22,24 @@
     <Page Remove="linqpad-samples\**" />
   </ItemGroup>
   <ItemGroup>
+    <!-- Even though the package is not needed in this project, it is needed in the CsvParser project. Without it, the code would fail at runtime. https://github.com/nuget/home/issues/3891#issuecomment-718259362 -->
+    <PackageReference Include="CsvHelper" Version="21.*" />
     <PackageReference Include="LINQPad.Reference" Version="1.*" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.8.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="3.*" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.*" />
+    <PackageReference Include="Windows7APICodePack-Shell" Version="1.1.0" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CsvParser\CsvParser.csproj" PrivateAssets="all">
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+      <IncludeAssets>CsvParser.dll</IncludeAssets>
+    </ProjectReference>
+  </ItemGroup>
+  <Target DependsOnTargets="ResolveReferences" Name="CopyProjectReferencesToPackage">
+    <ItemGroup>
+      <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))" />
+    </ItemGroup>
+  </Target>
   <ItemGroup>
     <None Update="ConnectionDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
