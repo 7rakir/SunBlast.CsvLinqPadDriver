@@ -7,7 +7,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Emit;
-using Microsoft.WindowsAPICodePack.Dialogs;
+using System.Windows.Forms;
 
 namespace Tarydium.CSVLINQPadDriver
 {
@@ -31,22 +31,17 @@ namespace Tarydium.CSVLINQPadDriver
 
 		public override bool ShowConnectionDialog(IConnectionInfo cxInfo, ConnectionDialogOptions dialogOptions)
 		{
-			var dialog = new CommonOpenFileDialog()
+			var dialog = new FolderBrowserDialog()
 			{
-				IsFolderPicker = true,
-				EnsureFileExists = true,
-				DefaultFileName = "DB",
-				Title = "Select a folder containing the desired CSV files"
+				Description = "Select a folder containing the desired CSV files", 
+				UseDescriptionForTitle = true
 			};
-			if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+			if (dialog.ShowDialog() == DialogResult.OK)
 			{
-				cxInfo.DisplayName = dialog.FileName;
+				cxInfo.DisplayName = dialog.SelectedPath;
 				return true;
 			}
-
 			return false;
-
-			return new ConnectionDialog(cxInfo).ShowDialog() == true;
 		}
 
 		public override List<ExplorerItem> GetSchemaAndBuildAssembly(
@@ -61,16 +56,21 @@ namespace Tarydium.CSVLINQPadDriver
 
 			AppendClassesToAssembly(assemblyToBuild, nameSpace, typeName, schema);
 
-			return schema.Select(GetExplorerItem).ToList();
+			return schema.Select(GetModelExplorerItem).ToList();
 		}
 
-		private static ExplorerItem GetExplorerItem(FileModel fileModel)
+		private static ExplorerItem GetModelExplorerItem(FileModel fileModel)
 		{
 			return new ExplorerItem(fileModel.ClassName, ExplorerItemKind.QueryableObject, ExplorerIcon.Table)
 			{
 				IsEnumerable = true,
-				Children = fileModel.Headers.Select(h => new ExplorerItem(h, ExplorerItemKind.Property, ExplorerIcon.Column)).ToList(),
+				Children = fileModel.Headers.Select(GetPropertyExplorerItem).ToList(),
 			};
+		}
+
+		private static ExplorerItem GetPropertyExplorerItem(string columnName)
+		{
+			return new ExplorerItem(columnName, ExplorerItemKind.Property, ExplorerIcon.Column);
 		}
 
 
