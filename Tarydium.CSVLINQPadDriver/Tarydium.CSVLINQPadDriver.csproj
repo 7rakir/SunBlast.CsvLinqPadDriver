@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
-    <UseWpf>true</UseWpf>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
     <AssemblyName>Tarydium.CSVLINQPadDriver</AssemblyName>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageTags>linqpaddriver</PackageTags>
@@ -9,7 +9,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants>NETCORE</DefineConstants>
-    <Version>1.2.4</Version>
+    <Version>2.0.0</Version>
     <Product>CSV LINQPad Driver</Product>
     <Company>Tarydium</Company>
     <Authors>Drakir</Authors>
@@ -27,7 +27,6 @@
     <PackageReference Include="LINQPad.Reference" Version="1.*" />
     <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="3.*" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.*" />
-    <PackageReference Include="Windows7APICodePack-Shell" Version="1.1.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CsvParser\CsvParser.csproj" PrivateAssets="all">
