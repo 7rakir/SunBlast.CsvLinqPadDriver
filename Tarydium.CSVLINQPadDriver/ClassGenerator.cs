@@ -8,11 +8,11 @@ using Microsoft.CodeAnalysis.Emit;
 
 namespace Tarydium.CSVLINQPadDriver
 {
-	internal class ClassGenerator
+	internal static class ClassGenerator
 	{
-		public EmitResult Generate(AssemblyName assembly, string nameSpace, string[] references, string className, IEnumerable<FileModel> schema)
+		public static EmitResult Generate(AssemblyName assembly, string nameSpace, IEnumerable<string> references, string className, IEnumerable<FileModel> schema)
 		{
-			var syntaxTree = new SyntaxTreeGenerator().GetSyntaxTree(nameSpace, className, schema);
+			var syntaxTree = SyntaxTreeGenerator.GetSyntaxTree(nameSpace, className, schema);
 
 			var compilation = GetCompilation(references, assembly, syntaxTree);
 
@@ -26,13 +26,11 @@ namespace Tarydium.CSVLINQPadDriver
 			return compilation.Emit(fileStream);
 		}
 
-		private static Compilation GetCompilation(string[] references, AssemblyName assembly, SyntaxTree syntaxTree)
+		private static Compilation GetCompilation(IEnumerable<string> references, AssemblyName assembly, SyntaxTree syntaxTree)
 		{
 			var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
 
-			var assemblyCsv = typeof(CsvParser.CsvReader).Assembly.Location;
-
-			var refs = references.Append(assemblyCsv).Select(x => MetadataReference.CreateFromFile(x));
+			var refs = references.Select(x => MetadataReference.CreateFromFile(x));
 
 			return CSharpCompilation.Create(assembly.FullName).WithOptions(options).AddReferences(refs).AddSyntaxTrees(syntaxTree);
 		}

@@ -5,14 +5,9 @@ using System.Linq;
 
 namespace Tarydium.CSVLINQPadDriver
 {
-	public interface ISchemaReader
+	internal static class SchemaReader
 	{
-		IEnumerable<FileModel> GetSchema(string path);
-	}
-
-	internal class SchemaReader : ISchemaReader
-	{
-		public IEnumerable<FileModel> GetSchema(string path)
+		public static IEnumerable<FileModel> GetSchema(string path)
 		{
 			return GetFiles(path).Select(GetModel).Where(m => m != null);
 		}
@@ -32,7 +27,7 @@ namespace Tarydium.CSVLINQPadDriver
 
 		private static string GetFirstLine(string filePath)
 		{
-			using var stream = File.OpenRead(filePath);
+			using var stream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
 			using var reader = new StreamReader(stream);
 

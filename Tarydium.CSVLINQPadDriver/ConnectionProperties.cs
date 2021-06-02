@@ -9,11 +9,11 @@ namespace Tarydium.CSVLINQPadDriver
 	/// <summary>
 	/// Wrapper to read/write connection properties. This acts as our ViewModel - we will bind to it in ConnectionDialog.xaml.
 	/// </summary>
-	class ConnectionProperties
+	internal class ConnectionProperties
 	{
 		public IConnectionInfo ConnectionInfo { get; private set; }
 
-		XElement DriverData => ConnectionInfo.DriverData;
+		private XElement DriverData => ConnectionInfo.DriverData;
 
 		public ConnectionProperties(IConnectionInfo cxInfo)
 		{

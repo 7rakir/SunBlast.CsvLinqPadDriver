@@ -20,11 +20,16 @@ namespace Tarydium.CSVLINQPadDriver
 				if(args.Exception.StackTrace.Contains("Tarydium.CSVLINQPadDriver"))
 					Debugger.Launch();
 			};
+
+			CsvReaderAssemblyLocation = typeof(CsvParser.CsvReader).Assembly.Location;
+			LoadAssemblySafely(CsvReaderAssemblyLocation);
 		}
 
 		public override string Name => "CSV to LINQ driver";
 
 		public override string Author => "Drakir";
+
+		private static string CsvReaderAssemblyLocation { get; }
 
 		public override string GetConnectionDescription(IConnectionInfo cxInfo)
 			=> "Transforming CSV to queryable objects using LINQ";
@@ -48,46 +53,23 @@ namespace Tarydium.CSVLINQPadDriver
 			IConnectionInfo cxInfo, AssemblyName assemblyToBuild, ref string nameSpace, ref string typeName)
 		{
 			string path = cxInfo.DisplayName;
-
-			string fileName = typeof(CsvParser.CsvReader).Assembly.Location;
-			LoadAssemblySafely(fileName);
-
-			var schema = new SchemaReader().GetSchema(path).ToArray();
+			var schema = SchemaReader.GetSchema(path).ToArray();
 
 			AppendClassesToAssembly(assemblyToBuild, nameSpace, typeName, schema);
 
-			return schema.Select(GetModelExplorerItem).ToList();
+			return TreeGenerator.GetTree(schema);
 		}
-
-		private static ExplorerItem GetModelExplorerItem(FileModel fileModel)
-		{
-			return new ExplorerItem(fileModel.ClassName, ExplorerItemKind.QueryableObject, ExplorerIcon.Table)
-			{
-				IsEnumerable = true,
-				Children = fileModel.Headers.Select(GetPropertyExplorerItem).ToList(),
-			};
-		}
-
-		private static ExplorerItem GetPropertyExplorerItem(string columnName)
-		{
-			return new ExplorerItem(columnName, ExplorerItemKind.Property, ExplorerIcon.Column);
-		}
-
 
 		private static void AppendClassesToAssembly(AssemblyName assemblyToBuild, string nameSpace, string typeName, IEnumerable<FileModel> schema)
 		{
-			var generator = new ClassGenerator();
+			var references = GetCoreFxReferenceAssemblies().Append(CsvReaderAssemblyLocation);
 
-			var references = GetCoreFxReferenceAssemblies();
+			var result = ClassGenerator.Generate(assemblyToBuild, nameSpace, references, typeName, schema);
 
-			var result = generator.Generate(assemblyToBuild, nameSpace, references, typeName, schema);
-
-			if (result.Success)
+			if (!result.Success)
 			{
-				return;
+				LogError(result);
 			}
-
-			LogError(result);
 		}
 
 		private static void LogError(EmitResult result)

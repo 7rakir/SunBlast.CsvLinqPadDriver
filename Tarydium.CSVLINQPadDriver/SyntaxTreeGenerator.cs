@@ -10,9 +10,9 @@ using static Tarydium.CSVLINQPadDriver.RoslynExtensions;
 
 namespace Tarydium.CSVLINQPadDriver
 {
-	public class SyntaxTreeGenerator
+	public static class SyntaxTreeGenerator
 	{
-		public SyntaxTree GetSyntaxTree(string nameSpace, string className, IEnumerable<FileModel> schema)
+		public static SyntaxTree GetSyntaxTree(string nameSpace, string className, IEnumerable<FileModel> schema)
 		{
 			var syntaxFactory = CompilationUnit();
 
@@ -47,7 +47,7 @@ namespace Tarydium.CSVLINQPadDriver
 		{
 			private ClassDeclarationSyntax contextClass;
 
-			private readonly List<ClassDeclarationSyntax> dataClasses = new List<ClassDeclarationSyntax>();
+			private readonly List<ClassDeclarationSyntax> dataClasses = new();
 
 			public ContextClassBuilder(string className)
 			{

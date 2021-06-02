@@ -7,9 +7,9 @@ namespace Tarydium.CSVLINQPadDriver.Tests
 	public class UnitTest2
 	{
 		[Test]
-		public void Test2()
+		public void Test1()
 		{
-			var path = @"C:\repos\Tarydium.CSVLINQPadDriver\Tarydium.CSVLINQPadDriver.Tests\Tested.csv";
+			const string path = @"C:\repos\Tarydium.CSVLINQPadDriver\Tarydium.CSVLINQPadDriver.Tests\Tested.csv";
 			var data = CsvReader.ReadFile<Data>(path);
 
 			var expected = new[]
@@ -23,11 +23,11 @@ namespace Tarydium.CSVLINQPadDriver.Tests
 			CollectionAssert.AreEqual(expected, data);
 		}
 
-		public class Data
+		private class Data
 		{
-			public string Column1 { get; set; }
-			public string Column2 { get; set; }
-			public string Column3 { get; set; }
+			public string Column1 { get; init; }
+			public string Column2 { get; init; }
+			public string Column3 { get; init; }
 
 			public override string ToString()
 			{

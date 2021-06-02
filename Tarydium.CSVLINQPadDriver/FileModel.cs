@@ -1,13 +1,15 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text.RegularExpressions;
-
 
 namespace Tarydium.CSVLINQPadDriver
 {
 	public class FileModel
 	{
 		private const string InvalidCharactersRegex = @"[^\p{Ll}\p{Lu}\p{Lt}\p{Lo}\p{Nd}\p{Nl}\p{Mn}\p{Mc}\p{Cf}\p{Pc}\p{Lm}]";
-		private static readonly Regex Regex = new Regex(InvalidCharactersRegex);
+		private static readonly Regex Regex = new(InvalidCharactersRegex);
+
+		public string Prefix { get; }
 
 		public string ClassName { get; }
 
@@ -21,10 +23,10 @@ namespace Tarydium.CSVLINQPadDriver
 
 			Headers = headers;
 
-			ClassName = GenerateValidIdentifierName(filePath);
+			(Prefix, ClassName) = GenerateValidIdentifierName(filePath);
 		}
 
-		private static string GenerateValidIdentifierName(string filePath)
+		private static (string, string) GenerateValidIdentifierName(string filePath)
 		{
 			var result = Path.GetFileNameWithoutExtension(filePath);
 
@@ -35,14 +37,18 @@ namespace Tarydium.CSVLINQPadDriver
 				result = result.Insert(0, "_");
 			}
 
-			return result.Replace(" ", string.Empty);
-		}
+			result = result.Replace(" ", string.Empty);
 
-		public class Header
-		{
-			public string Name { get; set; }
+			int underscoreIndex = result.IndexOf("_", StringComparison.Ordinal);
 
-			public string Type { get; set; }
+			if (underscoreIndex == -1)
+			{
+				return (null, result);
+			}
+
+			var prefix = result[..underscoreIndex];
+
+			return (prefix, result);
 		}
 	}
 }
