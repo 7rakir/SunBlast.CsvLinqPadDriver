@@ -23,10 +23,12 @@ namespace Tarydium.CSVLINQPadDriver
 
 			Headers = headers;
 
-			(Prefix, ClassName) = GenerateValidIdentifierName(filePath);
+			ClassName = GenerateValidIdentifierName(filePath);
+
+			Prefix = GetPrefix(ClassName);
 		}
 
-		private static (string, string) GenerateValidIdentifierName(string filePath)
+		private static string GenerateValidIdentifierName(string filePath)
 		{
 			var result = Path.GetFileNameWithoutExtension(filePath);
 
@@ -37,18 +39,14 @@ namespace Tarydium.CSVLINQPadDriver
 				result = result.Insert(0, "_");
 			}
 
-			result = result.Replace(" ", string.Empty);
+			return result.Replace(" ", string.Empty);
+		}
 
-			int underscoreIndex = result.IndexOf("_", StringComparison.Ordinal);
+		private static string GetPrefix(string className)
+		{
+			int underscoreIndex = className.IndexOf("_", StringComparison.Ordinal);
 
-			if (underscoreIndex == -1)
-			{
-				return (null, result);
-			}
-
-			var prefix = result[..underscoreIndex];
-
-			return (prefix, result);
+			return underscoreIndex == -1 ? null : className[..underscoreIndex];
 		}
 	}
 }

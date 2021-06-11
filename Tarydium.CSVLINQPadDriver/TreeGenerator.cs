@@ -51,7 +51,6 @@ namespace Tarydium.CSVLINQPadDriver
 		{
 			return new(prefix, ExplorerItemKind.Category, ExplorerIcon.Schema)
 			{
-				IsEnumerable = false,
 				Children = models,
 			};
 		}
