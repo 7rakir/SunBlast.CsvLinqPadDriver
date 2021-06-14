@@ -53,23 +53,25 @@ namespace Tarydium.CSVLINQPadDriver
 			IConnectionInfo cxInfo, AssemblyName assemblyToBuild, ref string nameSpace, ref string typeName)
 		{
 			string path = cxInfo.DisplayName;
-			var schema = SchemaReader.GetSchema(path).ToArray();
 
-			AppendClassesToAssembly(assemblyToBuild, nameSpace, typeName, schema);
-
-			return TreeGenerator.GetTree(schema);
-		}
-
-		private static void AppendClassesToAssembly(AssemblyName assemblyToBuild, string nameSpace, string typeName, IEnumerable<FileModel> schema)
-		{
+			var classGenerator = new ClassGenerator(typeName);
+			var treeGenerator = new TreeGenerator();
+			
+			foreach (var fileModel in SchemaReader.GetSchema(path))
+			{
+				classGenerator.Add(fileModel);
+				treeGenerator.Add(fileModel);
+			}
+			
 			var references = GetCoreFxReferenceAssemblies().Append(CsvReaderAssemblyLocation);
-
-			var result = ClassGenerator.Generate(assemblyToBuild, nameSpace, references, typeName, schema);
-
+			var result = classGenerator.Build(assemblyToBuild, nameSpace, references);
+			
 			if (!result.Success)
 			{
 				LogError(result);
 			}
+
+			return treeGenerator.Build().ToList();
 		}
 
 		private static void LogError(EmitResult result)

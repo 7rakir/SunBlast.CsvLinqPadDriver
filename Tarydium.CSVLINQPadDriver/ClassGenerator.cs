@@ -8,12 +8,24 @@ using Microsoft.CodeAnalysis.Emit;
 
 namespace Tarydium.CSVLINQPadDriver
 {
-	internal static class ClassGenerator
+	internal class ClassGenerator
 	{
-		public static EmitResult Generate(AssemblyName assembly, string nameSpace, IEnumerable<string> references, string className, IEnumerable<FileModel> schema)
-		{
-			var syntaxTree = SyntaxTreeGenerator.GetSyntaxTree(nameSpace, className, schema);
+		private readonly SyntaxTreeGenerator syntaxTreeGenerator;
 
+		public ClassGenerator(string className)
+		{
+			syntaxTreeGenerator = new SyntaxTreeGenerator(className);
+		}
+
+		public void Add(FileModel fileModel)
+		{
+			syntaxTreeGenerator.AddTable(fileModel);
+		}
+
+		public EmitResult Build(AssemblyName assembly, string nameSpace, IEnumerable<string> references)
+		{
+			var syntaxTree = syntaxTreeGenerator.Build(nameSpace);
+			
 			var compilation = GetCompilation(references, assembly, syntaxTree);
 
 			return Emit(assembly, compilation);

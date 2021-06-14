@@ -10,11 +10,19 @@ using static Tarydium.CSVLINQPadDriver.RoslynExtensions;
 
 namespace Tarydium.CSVLINQPadDriver
 {
-	public static class SyntaxTreeGenerator
+	public class SyntaxTreeGenerator
 	{
-		public static SyntaxTree GetSyntaxTree(string nameSpace, string className, IEnumerable<FileModel> schema)
+		private CompilationUnitSyntax syntaxFactory;
+		
+		private ClassDeclarationSyntax contextClass;
+
+		private readonly List<ClassDeclarationSyntax> dataClasses = new();
+
+		public SyntaxTreeGenerator(string className)
 		{
-			var syntaxFactory = CompilationUnit();
+			syntaxFactory = CompilationUnit();
+			
+			contextClass = ContextClassGenerator.CreateClass(className);
 
 			var usingList = new[]
 			{
@@ -26,48 +34,27 @@ namespace Tarydium.CSVLINQPadDriver
 			}.Select(name => UsingDirective(ParseName(name))).ToArray();
 
 			syntaxFactory = syntaxFactory.AddUsings(usingList);
+		}
 
-			var classBuilder = new ContextClassBuilder(className);
+		public void AddTable(FileModel fileModel)
+		{
+			dataClasses.Add(DataClassGenerator.CreateClass(fileModel));
 
-			foreach(var model in schema)
-			{
-				classBuilder.AddTable(model);
-			}
+			var property = ContextClassGenerator.CreateProperty(fileModel.ClassName);
+			var field = ContextClassGenerator.CreateField(fileModel);
 
-			var members = classBuilder.Build().ToArray();
+			contextClass = contextClass.AddMembers(property, field);
+		}
 
+		public SyntaxTree Build(string nameSpace)
+		{
+			var members = dataClasses.Prepend(contextClass).ToArray();
+			
 			var namespaceDeclaration = NamespaceDeclaration(ParseName(nameSpace)).AddMembers(members);
 
 			syntaxFactory = syntaxFactory.AddMembers(namespaceDeclaration);
 
 			return syntaxFactory.SyntaxTree;
-		}
-
-		private class ContextClassBuilder
-		{
-			private ClassDeclarationSyntax contextClass;
-
-			private readonly List<ClassDeclarationSyntax> dataClasses = new();
-
-			public ContextClassBuilder(string className)
-			{
-				contextClass = ContextClassGenerator.CreateClass(className);
-			}
-
-			public void AddTable(FileModel model)
-			{
-				dataClasses.Add(DataClassGenerator.CreateClass(model));
-
-				var property = ContextClassGenerator.CreateProperty(model.ClassName);
-				var field = ContextClassGenerator.CreateField(model);
-
-				contextClass = contextClass.AddMembers(property, field);
-			}
-
-			public IEnumerable<ClassDeclarationSyntax> Build()
-			{
-				return dataClasses.Prepend(contextClass);
-			}
 		}
 
 		private static class ContextClassGenerator

@@ -4,36 +4,30 @@ using LINQPad.Extensibility.DataContext;
 
 namespace Tarydium.CSVLINQPadDriver
 {
-	public static class TreeGenerator
+	public class TreeGenerator
 	{
-		public static List<ExplorerItem> GetTree(IEnumerable<FileModel> schema)
-		{
-			var tree = CreateTreeStructure(schema);
-			return GetExplorerItems(tree).ToList();
-		}
+		private readonly SortedDictionary<string, SortedDictionary<string, FileModel>> tree = new();
 
-		private static SortedDictionary<string, SortedDictionary<string, FileModel>> CreateTreeStructure(IEnumerable<FileModel> schema)
+		public void Add(FileModel fileModel)
 		{
-			var tree = new SortedDictionary<string, SortedDictionary<string, FileModel>>();
-
-			foreach(var model in schema)
+			var prefix = fileModel.Prefix ?? fileModel.ClassName;
+			if(!tree.TryGetValue(prefix, out var category))
 			{
-				var prefix = model.Prefix ?? model.ClassName;
-				if(!tree.TryGetValue(prefix, out var category))
-				{
-					category = new SortedDictionary<string, FileModel>();
-					tree.Add(prefix, category);
-				}
-
-				category.Add(model.ClassName, model);
+				category = new SortedDictionary<string, FileModel>();
+				tree.Add(prefix, category);
 			}
 
-			return tree;
+			category.Add(fileModel.ClassName, fileModel);
 		}
 
-		private static IEnumerable<ExplorerItem> GetExplorerItems(SortedDictionary<string, SortedDictionary<string, FileModel>> structure)
+		public IEnumerable<ExplorerItem> Build()
 		{
-			foreach(var (prefix, category) in structure)
+			return GetExplorerItems().ToList();
+		}
+		
+		private IEnumerable<ExplorerItem> GetExplorerItems()
+		{
+			foreach(var (prefix, category) in tree)
 			{
 				int categoryCount = category.Values.Count;
 				if(categoryCount == 1)

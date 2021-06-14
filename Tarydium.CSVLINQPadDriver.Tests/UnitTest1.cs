@@ -14,7 +14,12 @@ namespace Tarydium.CSVLINQPadDriver.Tests
 				new FileModel("Model.extension", new[] {"Header1", "Header-2"})
 			};
 
-			var tree = SyntaxTreeGenerator.GetSyntaxTree("TestNamespace", "ContextClass", schema);
+			var syntaxTreeGenerator = new SyntaxTreeGenerator("ContextClass");
+			foreach (var fileModel in schema)
+			{
+				syntaxTreeGenerator.AddTable(fileModel);
+			}
+			var tree = syntaxTreeGenerator.Build("TestNamespace");
 
 			var result = tree.GetRoot().NormalizeWhitespace().ToFullString();
 

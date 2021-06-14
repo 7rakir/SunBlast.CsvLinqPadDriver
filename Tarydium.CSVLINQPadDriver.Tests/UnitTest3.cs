@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using LINQPad.Extensibility.DataContext;
 using NUnit.Framework;
 
 namespace Tarydium.CSVLINQPadDriver.Tests
@@ -15,7 +16,7 @@ namespace Tarydium.CSVLINQPadDriver.Tests
 
 			var watch = Stopwatch.StartNew();
 
-			TreeGenerator.GetTree(schema);
+			_ = GetTree(schema).ToArray();
 
 			watch.Stop();
 
@@ -37,7 +38,7 @@ namespace Tarydium.CSVLINQPadDriver.Tests
 				new FileModel("A_2", singleHeader),
 			};
 
-			var result = TreeGenerator.GetTree(schema);
+			var result = GetTree(schema).ToArray();
 
 			Assert.That(result[0].Text, Is.EqualTo("A"));
 			Assert.That(result[0].Children[0].Text, Is.EqualTo("1"));
@@ -46,6 +47,16 @@ namespace Tarydium.CSVLINQPadDriver.Tests
 			Assert.That(result[2].Text, Is.EqualTo("C_1"));
 			Assert.That(result[3].Text, Is.EqualTo("CCC"));
 			Assert.That(result[4].Text, Is.EqualTo("DDD"));
+		}
+
+		private IEnumerable<ExplorerItem> GetTree(IEnumerable<FileModel> schema)
+		{
+			var generator = new TreeGenerator();
+			foreach (var fileModel in schema)
+			{
+				generator.Add(fileModel);
+			}
+			return generator.Build();
 		}
 
 		private static IEnumerable<FileModel> GetLargeSchema()
