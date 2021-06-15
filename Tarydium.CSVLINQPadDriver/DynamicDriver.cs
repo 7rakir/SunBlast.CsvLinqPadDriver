@@ -54,14 +54,14 @@ namespace Tarydium.CSVLINQPadDriver
 			ApplyModelAsync(path, syntaxTreeBuilder, schemaBuilder).Wait();
 
 			var tree = syntaxTreeBuilder.Build(nameSpace);
-			ClassGenerator.Emit(tree, assemblyToBuild);
+			CodeEmitter.Emit(tree, assemblyToBuild);
 			
 			return schemaBuilder.BuildSchema().ToList();
 		}
 
 		private static async Task ApplyModelAsync(string path, SyntaxTreeBuilder syntaxTreeBuilder, SchemaBuilder schemaBuilder)
 		{
-			await foreach (var fileModel in SchemaReader.GetSchemaModelAsync(path))
+			await foreach (var fileModel in ModelReader.GetSchemaModelAsync(path))
 			{
 				syntaxTreeBuilder.AddModel(fileModel);
 				schemaBuilder.AddModel(fileModel);
@@ -70,7 +70,7 @@ namespace Tarydium.CSVLINQPadDriver
 		
 		private static void ApplyModel(string path, SyntaxTreeBuilder syntaxTreeBuilder, SchemaBuilder schemaBuilder)
 		{
-			foreach (var fileModel in SchemaReader.GetSchemaModel(path))
+			foreach (var fileModel in ModelReader.GetSchemaModel(path))
 			{
 				syntaxTreeBuilder.AddModel(fileModel);
 				schemaBuilder.AddModel(fileModel);

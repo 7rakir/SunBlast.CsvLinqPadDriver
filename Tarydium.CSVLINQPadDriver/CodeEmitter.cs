@@ -9,9 +9,9 @@ using Microsoft.CodeAnalysis.Emit;
 
 namespace Tarydium.CSVLINQPadDriver
 {
-	public static class ClassGenerator
+	public static class CodeEmitter
 	{
-		static ClassGenerator()
+		static CodeEmitter()
 		{
 			CsvReaderAssemblyLocation = typeof(CsvParser.CsvReader).Assembly.Location;
 			DataContextDriver.LoadAssemblySafely(CsvReaderAssemblyLocation);

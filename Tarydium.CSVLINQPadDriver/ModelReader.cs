@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Tarydium.CSVLINQPadDriver
 {
-	internal static class SchemaReader
+	internal static class ModelReader
 	{
 		public static async IAsyncEnumerable<FileModel> GetSchemaModelAsync(string path)
 		{
