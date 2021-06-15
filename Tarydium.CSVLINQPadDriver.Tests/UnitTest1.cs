@@ -14,10 +14,10 @@ namespace Tarydium.CSVLINQPadDriver.Tests
 				new FileModel("Model.extension", new[] {"Header1", "Header-2"})
 			};
 
-			var syntaxTreeGenerator = new SyntaxTreeGenerator("ContextClass");
+			var syntaxTreeGenerator = new SyntaxTreeBuilder("ContextClass");
 			foreach (var fileModel in schema)
 			{
-				syntaxTreeGenerator.AddTable(fileModel);
+				syntaxTreeGenerator.AddModel(fileModel);
 			}
 			var tree = syntaxTreeGenerator.Build("TestNamespace");
 

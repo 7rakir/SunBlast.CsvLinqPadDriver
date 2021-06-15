@@ -1,50 +1,60 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using LINQPad.Extensibility.DataContext;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 
 namespace Tarydium.CSVLINQPadDriver
 {
-	internal class ClassGenerator
+	public static class ClassGenerator
 	{
-		private readonly SyntaxTreeGenerator syntaxTreeGenerator;
-
-		public ClassGenerator(string className)
+		static ClassGenerator()
 		{
-			syntaxTreeGenerator = new SyntaxTreeGenerator(className);
+			CsvReaderAssemblyLocation = typeof(CsvParser.CsvReader).Assembly.Location;
+			DataContextDriver.LoadAssemblySafely(CsvReaderAssemblyLocation);
 		}
 
-		public void Add(FileModel fileModel)
-		{
-			syntaxTreeGenerator.AddTable(fileModel);
-		}
+		private static string CsvReaderAssemblyLocation { get; }
 
-		public EmitResult Build(AssemblyName assembly, string nameSpace, IEnumerable<string> references)
+		public static void Emit(SyntaxTree syntaxTree, AssemblyName assembly)
 		{
-			var syntaxTree = syntaxTreeGenerator.Build(nameSpace);
+			var compilation = GetCompilation(assembly, syntaxTree);
 			
-			var compilation = GetCompilation(references, assembly, syntaxTree);
-
-			return Emit(assembly, compilation);
+			using var fileStream = File.OpenWrite(assembly.CodeBase!);
+			
+			var result = compilation.Emit(fileStream);
+			
+			if(!result.Success)
+			{
+				LogError(result);
+			}
 		}
 
-		private static EmitResult Emit(AssemblyName assembly, Compilation compilation)
-		{
-			using var fileStream = File.OpenWrite(assembly.CodeBase);
-
-			return compilation.Emit(fileStream);
-		}
-
-		private static Compilation GetCompilation(IEnumerable<string> references, AssemblyName assembly, SyntaxTree syntaxTree)
+		private static Compilation GetCompilation(AssemblyName assembly, SyntaxTree syntaxTree)
 		{
 			var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
 
-			var refs = references.Select(x => MetadataReference.CreateFromFile(x));
+			var references = DataContextDriver
+				.GetCoreFxReferenceAssemblies()
+				.Append(CsvReaderAssemblyLocation)
+				.Select(x => MetadataReference.CreateFromFile(x));
 
-			return CSharpCompilation.Create(assembly.FullName).WithOptions(options).AddReferences(refs).AddSyntaxTrees(syntaxTree);
+			return CSharpCompilation
+				.Create(assembly.FullName)
+				.WithOptions(options)
+				.AddReferences(references)
+				.AddSyntaxTrees(syntaxTree);
+		}
+		
+		private static void LogError(EmitResult result)
+		{
+			var message = string.Join(Environment.NewLine,
+				result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).Select(d => d.GetMessage()));
+
+			DynamicDriver.WriteToLog(message);
 		}
 	}
 }

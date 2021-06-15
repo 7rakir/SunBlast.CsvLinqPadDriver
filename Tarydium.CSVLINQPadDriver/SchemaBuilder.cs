@@ -4,30 +4,30 @@ using LINQPad.Extensibility.DataContext;
 
 namespace Tarydium.CSVLINQPadDriver
 {
-	public class TreeGenerator
+	public class SchemaBuilder
 	{
-		private readonly SortedDictionary<string, SortedDictionary<string, FileModel>> tree = new();
+		private readonly SortedDictionary<string, SortedDictionary<string, FileModel>> schema = new();
 
-		public void Add(FileModel fileModel)
+		public void AddModel(FileModel fileModel)
 		{
 			var prefix = fileModel.Prefix ?? fileModel.ClassName;
-			if(!tree.TryGetValue(prefix, out var category))
+			if(!schema.TryGetValue(prefix, out var category))
 			{
 				category = new SortedDictionary<string, FileModel>();
-				tree.Add(prefix, category);
+				schema.Add(prefix, category);
 			}
 
 			category.Add(fileModel.ClassName, fileModel);
 		}
 
-		public IEnumerable<ExplorerItem> Build()
+		public IEnumerable<ExplorerItem> BuildSchema()
 		{
 			return GetExplorerItems().ToList();
 		}
 		
 		private IEnumerable<ExplorerItem> GetExplorerItems()
 		{
-			foreach(var (prefix, category) in tree)
+			foreach(var (prefix, category) in schema)
 			{
 				int categoryCount = category.Values.Count;
 				if(categoryCount == 1)

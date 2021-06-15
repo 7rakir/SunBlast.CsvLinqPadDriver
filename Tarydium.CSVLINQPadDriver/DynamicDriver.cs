@@ -5,8 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Emit;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Tarydium.CSVLINQPadDriver
@@ -20,16 +19,11 @@ namespace Tarydium.CSVLINQPadDriver
 				if(args.Exception.StackTrace.Contains("Tarydium.CSVLINQPadDriver"))
 					Debugger.Launch();
 			};
-
-			CsvReaderAssemblyLocation = typeof(CsvParser.CsvReader).Assembly.Location;
-			LoadAssemblySafely(CsvReaderAssemblyLocation);
 		}
 
 		public override string Name => "CSV to LINQ driver";
 
 		public override string Author => "Drakir";
-
-		private static string CsvReaderAssemblyLocation { get; }
 
 		public override string GetConnectionDescription(IConnectionInfo cxInfo)
 			=> "Transforming CSV to queryable objects using LINQ";
@@ -54,32 +48,35 @@ namespace Tarydium.CSVLINQPadDriver
 		{
 			string path = cxInfo.DisplayName;
 
-			var classGenerator = new ClassGenerator(typeName);
-			var treeGenerator = new TreeGenerator();
+			var syntaxTreeBuilder = new SyntaxTreeBuilder(typeName);
+			var schemaBuilder = new SchemaBuilder();
 			
-			foreach (var fileModel in SchemaReader.GetSchema(path))
-			{
-				classGenerator.Add(fileModel);
-				treeGenerator.Add(fileModel);
-			}
-			
-			var references = GetCoreFxReferenceAssemblies().Append(CsvReaderAssemblyLocation);
-			var result = classGenerator.Build(assemblyToBuild, nameSpace, references);
-			
-			if (!result.Success)
-			{
-				LogError(result);
-			}
+			ApplyModelAsync(path, syntaxTreeBuilder, schemaBuilder).Wait();
 
-			return treeGenerator.Build().ToList();
+			var tree = syntaxTreeBuilder.Build(nameSpace);
+			ClassGenerator.Emit(tree, assemblyToBuild);
+			
+			return schemaBuilder.BuildSchema().ToList();
 		}
 
-		private static void LogError(EmitResult result)
+		private static async Task ApplyModelAsync(string path, SyntaxTreeBuilder syntaxTreeBuilder, SchemaBuilder schemaBuilder)
 		{
-			var message = string.Join(Environment.NewLine,
-				result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).Select(d => d.GetMessage()));
-
-			WriteToLog(message, "Tarydium");
+			await foreach (var fileModel in SchemaReader.GetSchemaModelAsync(path))
+			{
+				syntaxTreeBuilder.AddModel(fileModel);
+				schemaBuilder.AddModel(fileModel);
+			}
 		}
+		
+		private static void ApplyModel(string path, SyntaxTreeBuilder syntaxTreeBuilder, SchemaBuilder schemaBuilder)
+		{
+			foreach (var fileModel in SchemaReader.GetSchemaModel(path))
+			{
+				syntaxTreeBuilder.AddModel(fileModel);
+				schemaBuilder.AddModel(fileModel);
+			}
+		}
+
+		public static void WriteToLog(string message) => WriteToLog(message, "Tarydium");
 	}
 }

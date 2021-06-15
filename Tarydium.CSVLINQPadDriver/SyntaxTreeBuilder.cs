@@ -10,33 +10,18 @@ using static Tarydium.CSVLINQPadDriver.RoslynExtensions;
 
 namespace Tarydium.CSVLINQPadDriver
 {
-	public class SyntaxTreeGenerator
+	public class SyntaxTreeBuilder
 	{
-		private CompilationUnitSyntax syntaxFactory;
-		
 		private ClassDeclarationSyntax contextClass;
 
-		private readonly List<ClassDeclarationSyntax> dataClasses = new();
+		private readonly List<MemberDeclarationSyntax> dataClasses = new();
 
-		public SyntaxTreeGenerator(string className)
+		public SyntaxTreeBuilder(string className)
 		{
-			syntaxFactory = CompilationUnit();
-			
 			contextClass = ContextClassGenerator.CreateClass(className);
-
-			var usingList = new[]
-			{
-				"System",
-				"System.Collections.Generic",
-				"System.IO",
-				"System.Linq",
-				"CsvParser"
-			}.Select(name => UsingDirective(ParseName(name))).ToArray();
-
-			syntaxFactory = syntaxFactory.AddUsings(usingList);
 		}
 
-		public void AddTable(FileModel fileModel)
+		public void AddModel(FileModel fileModel)
 		{
 			dataClasses.Add(DataClassGenerator.CreateClass(fileModel));
 
@@ -52,9 +37,24 @@ namespace Tarydium.CSVLINQPadDriver
 			
 			var namespaceDeclaration = NamespaceDeclaration(ParseName(nameSpace)).AddMembers(members);
 
-			syntaxFactory = syntaxFactory.AddMembers(namespaceDeclaration);
+			var usingList = GetUsingDirectives();
 
-			return syntaxFactory.SyntaxTree;
+			return CompilationUnit()
+				.AddUsings(usingList)
+				.AddMembers(namespaceDeclaration)
+				.SyntaxTree;
+		}
+
+		private static UsingDirectiveSyntax[] GetUsingDirectives()
+		{
+			return new[]
+			{
+				"System",
+				"System.Collections.Generic",
+				"System.IO",
+				"System.Linq",
+				"CsvParser"
+			}.Select(name => UsingDirective(ParseName(name))).ToArray();
 		}
 
 		private static class ContextClassGenerator
@@ -120,7 +120,7 @@ namespace Tarydium.CSVLINQPadDriver
 					.AddMembers(property);
 			}
 
-			private static PropertyDeclarationSyntax CreateProperty(string propertyType, string propertyName)
+			private static MemberDeclarationSyntax CreateProperty(string propertyType, string propertyName)
 			{
 				return PropertyDeclaration(ParseTypeName(propertyType), propertyName)
 					.AddModifiers(Token(SyntaxKind.PublicKeyword))

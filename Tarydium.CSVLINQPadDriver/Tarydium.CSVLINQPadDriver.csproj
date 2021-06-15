@@ -9,7 +9,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants>NETCORE</DefineConstants>
-    <Version>2.2.0</Version>
+    <Version>2.3.0</Version>
     <Product>CSV LINQPad Driver</Product>
     <Company>Tarydium</Company>
     <Authors>Drakir</Authors>
