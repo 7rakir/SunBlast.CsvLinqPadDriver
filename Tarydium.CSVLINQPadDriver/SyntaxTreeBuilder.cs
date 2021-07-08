@@ -18,17 +18,16 @@ namespace Tarydium.CSVLINQPadDriver
 
 		public SyntaxTreeBuilder(string className)
 		{
-			contextClass = ContextClassGenerator.CreateClass(className);
+			contextClass = ClassDeclaration(className).AsPublic();
 		}
 
 		public void AddModel(FileModel fileModel)
 		{
 			dataClasses.Add(DataClassGenerator.CreateClass(fileModel));
 
-			var property = ContextClassGenerator.CreateProperty(fileModel.ClassName);
-			var field = ContextClassGenerator.CreateField(fileModel);
+			var property = ContextClassGenerator.CreateProperty(fileModel);
 
-			contextClass = contextClass.AddMembers(property, field);
+			contextClass = contextClass.AddMembers(property);
 		}
 
 		public SyntaxTree Build(string nameSpace)
@@ -37,7 +36,7 @@ namespace Tarydium.CSVLINQPadDriver
 			
 			var namespaceDeclaration = NamespaceDeclaration(ParseName(nameSpace)).AddMembers(members);
 
-			var usingList = GetUsingDirectives();
+			var usingList = GetUsingDirectives().ToArray();
 
 			return CompilationUnit()
 				.AddUsings(usingList)
@@ -45,7 +44,7 @@ namespace Tarydium.CSVLINQPadDriver
 				.SyntaxTree;
 		}
 
-		private static UsingDirectiveSyntax[] GetUsingDirectives()
+		private static IEnumerable<UsingDirectiveSyntax> GetUsingDirectives()
 		{
 			return new[]
 			{
@@ -54,53 +53,28 @@ namespace Tarydium.CSVLINQPadDriver
 				"System.IO",
 				"System.Linq",
 				"CsvParser"
-			}.Select(name => UsingDirective(ParseName(name))).ToArray();
+			}.Select(name => UsingDirective(ParseName(name)));
 		}
 
 		private static class ContextClassGenerator
 		{
-			public static ClassDeclarationSyntax CreateClass(string className)
+			public static PropertyDeclarationSyntax CreateProperty(FileModel model)
 			{
-				return ClassDeclaration(className)
-					.AddModifiers(Token(SyntaxKind.PublicKeyword));
-			}
-
-			public static PropertyDeclarationSyntax CreateProperty(string propertyName)
-			{
-				return PropertyDeclaration(ParseTypeName($"IEnumerable<{propertyName}>"), propertyName)
-					.AddModifiers(Token(SyntaxKind.PublicKeyword))
+				return PropertyDeclaration(ParseTypeName($"IEnumerable<{model.ClassName}>"), model.ClassName)
+					.AsPublic()
 					.WithExpressionBody(
 						ArrowExpressionClause(
-							MemberAccessExpression(
-								SyntaxKind.SimpleMemberAccessExpression,
-								IdentifierName($"_{propertyName}"),
-								IdentifierName("Value"))));
-			}
-
-			public static FieldDeclarationSyntax CreateField(FileModel model)
-			{
-				var readFileCall = GetCsvReaderCall(model);
-
-				// field declaration and initialization
-
-				var objectCreation = CreateConstructorCall($"Lazy<IEnumerable<{model.ClassName}>>")
-					.WithSingleArgument(ParenthesizedLambdaExpression(readFileCall));
-
-				var equalsClause = EqualsValueClause(objectCreation);
-
-				var variableDeclaration = VariableDeclaration(ParseTypeName($"Lazy<IEnumerable<{model.ClassName}>>"))
-					.AddVariables(VariableDeclarator($"_{model.ClassName}").WithInitializer(equalsClause));
-
-				return FieldDeclaration(variableDeclaration).AddModifiers(Token(SyntaxKind.PrivateKeyword));
+							GetCsvReaderCall(model)));
 			}
 
 			private static InvocationExpressionSyntax GetCsvReaderCall(FileModel model)
 			{
-				return InvocationExpression(MemberAccessExpression(
+				return InvocationExpression(
+					MemberAccessExpression(
 						SyntaxKind.SimpleMemberAccessExpression,
 						IdentifierName("CsvReader"),
-						GenericName(Identifier("ReadFile")).WithSingleTypeArgument(IdentifierName(model.ClassName))))
-					.WithSingleArgument(CreateStringLiteral(model.FilePath));
+						GenericName("ReadFile").WithSingleTypeArgument(IdentifierName(model.ClassName)))
+					).WithSingleArgument(CreateStringLiteral(model.FilePath));
 			}
 		}
 
@@ -113,17 +87,15 @@ namespace Tarydium.CSVLINQPadDriver
 					throw new ArgumentException($"Invalid name '{model.ClassName}'", model.ClassName);
 				}
 
-				var property = model.Headers.Select(header => CreateProperty("string", header)).ToArray();
+				var property = model.Headers.Select(CreateProperty).ToArray();
 
-				return ClassDeclaration(model.ClassName)
-					.AddModifiers(Token(SyntaxKind.PublicKeyword))
-					.AddMembers(property);
+				return ClassDeclaration(model.ClassName).AsPublic().AddMembers(property);
 			}
 
-			private static MemberDeclarationSyntax CreateProperty(string propertyType, string propertyName)
+			private static MemberDeclarationSyntax CreateProperty(string propertyName)
 			{
-				return PropertyDeclaration(ParseTypeName(propertyType), propertyName)
-					.AddModifiers(Token(SyntaxKind.PublicKeyword))
+				return PropertyDeclaration(ParseTypeName("string"), propertyName)
+					.AsPublic()
 					.AddAccessorListAccessors(AccessorDeclaration(SyntaxKind.GetAccessorDeclaration), AccessorDeclaration(SyntaxKind.SetAccessorDeclaration));
 			}
 		}

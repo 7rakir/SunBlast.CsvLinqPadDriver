@@ -11,11 +11,6 @@ namespace Tarydium.CSVLINQPadDriver
 			return invocation.WithArgumentList(CreateSingleArgumentList(expression));
 		}
 
-		public static ObjectCreationExpressionSyntax WithSingleArgument(this ObjectCreationExpressionSyntax creation, ExpressionSyntax expression)
-		{
-			return creation.WithArgumentList(CreateSingleArgumentList(expression));
-		}
-
 		public static GenericNameSyntax WithSingleTypeArgument(this GenericNameSyntax genericName, TypeSyntax type)
 		{
 			return genericName.WithTypeArgumentList(
@@ -27,15 +22,19 @@ namespace Tarydium.CSVLINQPadDriver
 			return ArgumentList(SingletonSeparatedList(Argument(expression)));
 		}
 
-		public static ObjectCreationExpressionSyntax CreateConstructorCall(string typeName)
-		{
-			return ObjectCreationExpression(Token(SyntaxKind.NewKeyword), ParseTypeName(typeName),
-				null, null);
-		}
-
 		public static LiteralExpressionSyntax CreateStringLiteral(string value)
 		{
 			return LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(value));
+		}
+
+		public static PropertyDeclarationSyntax AsPublic(this PropertyDeclarationSyntax declarationSyntax)
+		{
+			return declarationSyntax.AddModifiers(Token(SyntaxKind.PublicKeyword));
+		}
+		
+		public static ClassDeclarationSyntax AsPublic(this ClassDeclarationSyntax declarationSyntax)
+		{
+			return declarationSyntax.AddModifiers(Token(SyntaxKind.PublicKeyword));
 		}
 	}
 }
