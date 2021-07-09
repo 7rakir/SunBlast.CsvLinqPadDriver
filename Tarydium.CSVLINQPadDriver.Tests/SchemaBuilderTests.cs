@@ -1,28 +1,21 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Runtime;
-using LINQPad.Extensibility.DataContext;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using NUnit.Framework;
 
 namespace Tarydium.CSVLINQPadDriver.Tests
 {
+	[TestFixture]
 	public class SchemaBuilderTests
 	{
 		[Test]
-		public void Test3()
+		public void GenerateSchemaForLargeModel_ShouldBeFast()
 		{
-			var schemaModel = GetLargeSchemaModel().ToArray();
+			var schemaModel = DataGeneration.GetLargeSchemaModel().ToArray();
 
 			var watch = Stopwatch.StartNew();
 
-			_ = GetSchema(schemaModel).ToArray();
+			_ = DataGeneration.GetSchema(schemaModel).ToArray();
 
 			watch.Stop();
 
@@ -30,49 +23,9 @@ namespace Tarydium.CSVLINQPadDriver.Tests
 			
 			Assert.That(watch.ElapsedMilliseconds, Is.LessThan(10));
 		}
-		
-		[Test]
-		public void Test5()
-		{
-			var schemaModel = GetLargeSchemaModel().ToArray();
-			var syntaxTree = _ = GetSyntaxTree(schemaModel);
-
-			var assembly = new AssemblyName("AssemblyName");
-			
-			var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
-			
-			var assemblyPath = Path.GetDirectoryName(typeof(object).Assembly.Location);
-
-			var references = new string[]{}
-				.Append(typeof(CsvParser.CsvReader).Assembly.Location)
-				.Append(typeof(object).Assembly.Location)
-				.Append(typeof(Enumerable).Assembly.Location)
-				.Append(typeof(GCSettings).Assembly.Location)
-				.Append(typeof(ICollection).Assembly.Location)
-				.Append(Path.Combine(assemblyPath, "System.Runtime.dll"))
-				.Select(x => MetadataReference.CreateFromFile(x));
-
-			var watch = Stopwatch.StartNew();
-
-			var compilation = CSharpCompilation.Create(assembly.FullName).AddSyntaxTrees(syntaxTree).AddReferences(references).WithOptions(options);
-
-			using var stream = new MemoryStream();
-			
-			var result = compilation.Emit(stream);
-
-			watch.Stop();
-
-			Console.WriteLine(watch.Elapsed);
-			
-			var errorMessage = result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).Select(d => d.GetMessage()).Take(5);
-			
-			Assert.That(result.Success, Is.True, String.Join(Environment.NewLine, errorMessage));
-			
-			Assert.That(watch.ElapsedMilliseconds, Is.LessThan(3000));
-		}
 
 		[Test]
-		public void Test4()
+		public void GenerateSchemaForModel_SchemaShouldBeProperlySegmented()
 		{
 			var singleHeader = new[] {"Header1"};
 
@@ -86,7 +39,7 @@ namespace Tarydium.CSVLINQPadDriver.Tests
 				new FileModel("A_2", singleHeader),
 			};
 
-			var result = GetSchema(fileModels).ToArray();
+			var result = DataGeneration.GetSchema(fileModels).ToArray();
 
 			Assert.That(result[0].Text, Is.EqualTo("A (2)"));
 			Assert.That(result[0].Children[0].Text, Is.EqualTo("A_1"));
@@ -95,38 +48,6 @@ namespace Tarydium.CSVLINQPadDriver.Tests
 			Assert.That(result[2].Text, Is.EqualTo("C_1"));
 			Assert.That(result[3].Text, Is.EqualTo("CCC"));
 			Assert.That(result[4].Text, Is.EqualTo("DDD"));
-		}
-
-		private static IEnumerable<ExplorerItem> GetSchema(IEnumerable<FileModel> schemaModel)
-		{
-			var builder = new SchemaBuilder();
-			foreach (var fileModel in schemaModel)
-			{
-				builder.AddModel(fileModel);
-			}
-			return builder.BuildSchema();
-		}
-		
-		private static SyntaxTree GetSyntaxTree(IEnumerable<FileModel> schemaModel)
-		{
-			var syntaxTreeBuilder = new SyntaxTreeBuilder("MyClass");
-			foreach (var fileModel in schemaModel)
-			{
-				syntaxTreeBuilder.AddModel(fileModel);
-			}
-			return syntaxTreeBuilder.Build("MyNameSpace");
-		}
-
-		private static IEnumerable<FileModel> GetLargeSchemaModel()
-		{
-			for (int i = 0; i < 1000; i++)
-			{
-				yield return new FileModel($"File{i:000}.csv",
-					new[]
-					{
-						"Header1", "Header2", "Header3", "Header4", "Header5", "Header6", "Header7", "Header8", "Header9"
-					});
-			}
 		}
 	}
 }
