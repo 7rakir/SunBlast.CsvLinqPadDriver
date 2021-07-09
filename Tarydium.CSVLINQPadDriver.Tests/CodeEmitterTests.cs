@@ -17,7 +17,7 @@ namespace Tarydium.CSVLINQPadDriver.Tests
     public class CodeEmitterTests
     {
         [Test]
-        public void Test5()
+        public void CodeEmittingShouldBeReasonablySlow()
         {
         	var schemaModel = DataGeneration.GetLargeSchemaModel().ToArray();
         	var syntaxTree = DataGeneration.GetSyntaxTree(schemaModel);
