@@ -1,48 +1,30 @@
 using System;
+using System.IO;
 using CsvParser;
 using NUnit.Framework;
 
 namespace Tarydium.CSVLINQPadDriver.Tests
 {
+	[TestFixture]
 	public class CsvReaderTests
 	{
 		[Test]
-		public void Test1()
+		public void CsvWithDataSplitAcrossLines_ShouldBeProperlyParsed()
 		{
-			const string path = @"C:\repos\Tarydium.CSVLINQPadDriver\Tarydium.CSVLINQPadDriver.Tests\Tested.csv";
+			string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestData", $"{nameof(CsvReaderTests)}.csv");
 			var data = CsvReader.ReadFile<Data>(path);
 
 			var expected = new[]
 			{
-				new Data { Column1 = "Row1Column1", Column2 = "Row1Column2", Column3 = "Row1Column3" },
-				new Data { Column1 = "Row2Column1", Column2 = "Row2Column2", Column3 = $"Row2{Environment.NewLine}Column3" },
-				new Data { Column1 = "Row3Column1", Column2 = "Row3Column2", Column3 = "Row3Column3" },
-				new Data { Column1 = "Row4,Column1", Column2 = "Row4,Column2", Column3 = $"Row4,{Environment.NewLine}Column3" }
+				new Data("Row1Column1", "Row1Column2", "Row1Column3"),
+				new Data("Row2Column1", "Row2Column2", $"Row2{Environment.NewLine}Column3"),
+				new Data("Row3Column1", "Row3Column2", "Row3Column3"),
+				new Data("Row4,Column1", "Row4,Column2", $"Row4,{Environment.NewLine}Column3")
 			};
 
 			CollectionAssert.AreEqual(expected, data);
 		}
 
-		private class Data
-		{
-			public string Column1 { get; init; }
-			public string Column2 { get; init; }
-			public string Column3 { get; init; }
-
-			public override string ToString()
-			{
-				return $"{Column1},{Column2},{Column3}";
-			}
-
-			public override bool Equals(object? obj)
-			{
-				if (obj is Data data)
-				{
-					return Column1 == data.Column1 && Column2 == data.Column2 && Column3 == data.Column3;
-				}
-
-				return false;
-			}
-		}
+		private record Data(string Column1, string Column2, string Column3);
 	}
 }
