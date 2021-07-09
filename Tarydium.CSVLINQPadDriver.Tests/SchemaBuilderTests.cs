@@ -13,7 +13,7 @@ using NUnit.Framework;
 
 namespace Tarydium.CSVLINQPadDriver.Tests
 {
-	public class UnitTest3
+	public class SchemaBuilderTests
 	{
 		[Test]
 		public void Test3()

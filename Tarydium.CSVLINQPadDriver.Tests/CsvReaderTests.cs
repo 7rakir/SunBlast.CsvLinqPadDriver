@@ -4,7 +4,7 @@ using NUnit.Framework;
 
 namespace Tarydium.CSVLINQPadDriver.Tests
 {
-	public class UnitTest2
+	public class CsvReaderTests
 	{
 		[Test]
 		public void Test1()
