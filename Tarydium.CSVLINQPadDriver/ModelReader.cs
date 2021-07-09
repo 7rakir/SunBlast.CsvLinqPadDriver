@@ -23,10 +23,10 @@ namespace Tarydium.CSVLINQPadDriver
 
 		public static IEnumerable<FileModel> GetSchemaModel(string path)
 		{
-			return GetFiles(path).Select(GetModel).Where(m => m != null);
+			return GetFiles(path).Select(GetModel).Where(m => m != null)!;
 		}
 
-		private static async Task<FileModel> GetModelAsync(string filePath)
+		private static async Task<FileModel?> GetModelAsync(string filePath)
 		{
 			var firstLine = await GetFirstLineAsync(filePath);
 
@@ -39,7 +39,7 @@ namespace Tarydium.CSVLINQPadDriver
 			return new FileModel(filePath, headers);
 		}
 
-		private static FileModel GetModel(string filePath)
+		private static FileModel? GetModel(string filePath)
 		{
 			var firstLine = GetFirstLine(filePath);
 
@@ -52,7 +52,7 @@ namespace Tarydium.CSVLINQPadDriver
 			return new FileModel(filePath, headers);
 		}
 
-		private static async Task<string> GetFirstLineAsync(string filePath)
+		private static async Task<string?> GetFirstLineAsync(string filePath)
 		{
 			await using var stream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
@@ -61,7 +61,7 @@ namespace Tarydium.CSVLINQPadDriver
 			return await reader.ReadLineAsync();
 		}
 
-		private static string GetFirstLine(string filePath)
+		private static string? GetFirstLine(string filePath)
 		{
 			using var stream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 

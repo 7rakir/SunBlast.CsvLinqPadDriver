@@ -16,7 +16,7 @@ namespace Tarydium.CSVLINQPadDriver
 		{
 			AppDomain.CurrentDomain.FirstChanceException += (sender, args) =>
 			{
-				if(args.Exception.StackTrace.Contains("Tarydium.CSVLINQPadDriver"))
+				if(args.Exception.StackTrace?.Contains("Tarydium.CSVLINQPadDriver") is true)
 					Debugger.Launch();
 			};
 		}

@@ -4,10 +4,11 @@ using NUnit.Framework;
 
 namespace Tarydium.CSVLINQPadDriver.Tests
 {
-	public class UnitTest1
+	public class SyntaxTreeBuilderTests
 	{
 		[Test]
-		public void Test1()
+		[Explicit("Displays the output of building the syntax tree. Unless it fails during the build, it does not have a testing value.")]
+		public void GenerateSyntaxTree()
 		{
 			var schema = new[]
 			{

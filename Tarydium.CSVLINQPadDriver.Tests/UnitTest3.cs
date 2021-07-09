@@ -97,7 +97,7 @@ namespace Tarydium.CSVLINQPadDriver.Tests
 			Assert.That(result[4].Text, Is.EqualTo("DDD"));
 		}
 
-		private IEnumerable<ExplorerItem> GetSchema(IEnumerable<FileModel> schemaModel)
+		private static IEnumerable<ExplorerItem> GetSchema(IEnumerable<FileModel> schemaModel)
 		{
 			var builder = new SchemaBuilder();
 			foreach (var fileModel in schemaModel)
@@ -107,7 +107,7 @@ namespace Tarydium.CSVLINQPadDriver.Tests
 			return builder.BuildSchema();
 		}
 		
-		private SyntaxTree GetSyntaxTree(IEnumerable<FileModel> schemaModel)
+		private static SyntaxTree GetSyntaxTree(IEnumerable<FileModel> schemaModel)
 		{
 			var syntaxTreeBuilder = new SyntaxTreeBuilder("MyClass");
 			foreach (var fileModel in schemaModel)
@@ -128,7 +128,5 @@ namespace Tarydium.CSVLINQPadDriver.Tests
 					});
 			}
 		}
-
-
 	}
 }

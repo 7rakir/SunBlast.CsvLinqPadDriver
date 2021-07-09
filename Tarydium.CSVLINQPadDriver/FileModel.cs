@@ -9,7 +9,7 @@ namespace Tarydium.CSVLINQPadDriver
 		private const string InvalidCharactersRegex = @"[^\p{Ll}\p{Lu}\p{Lt}\p{Lo}\p{Nd}\p{Nl}\p{Mn}\p{Mc}\p{Cf}\p{Pc}\p{Lm}]";
 		private static readonly Regex Regex = new(InvalidCharactersRegex);
 
-		public string Prefix { get; }
+		public string? Prefix { get; }
 
 		public string ClassName { get; }
 
@@ -42,9 +42,9 @@ namespace Tarydium.CSVLINQPadDriver
 			return result.Replace(" ", string.Empty);
 		}
 
-		private static string GetPrefix(string className)
+		private static string? GetPrefix(string className)
 		{
-			int underscoreIndex = className.IndexOf("_", StringComparison.Ordinal);
+			int underscoreIndex = className.IndexOf('_', StringComparison.Ordinal);
 
 			return underscoreIndex == -1 ? null : className[..underscoreIndex];
 		}
