@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Tarydium.CSVLINQPadDriver
@@ -21,11 +20,6 @@ namespace Tarydium.CSVLINQPadDriver
 			}
 		}
 
-		public static IEnumerable<FileModel> GetSchemaModel(string path)
-		{
-			return GetFiles(path).Select(GetModel).Where(m => m != null)!;
-		}
-
 		private static async Task<FileModel?> GetModelAsync(string filePath)
 		{
 			var firstLine = await GetFirstLineAsync(filePath);
@@ -35,20 +29,7 @@ namespace Tarydium.CSVLINQPadDriver
 				return null;
 			}
 
-			var headers = firstLine.Split(",", StringSplitOptions.RemoveEmptyEntries);
-			return new FileModel(filePath, headers);
-		}
-
-		private static FileModel? GetModel(string filePath)
-		{
-			var firstLine = GetFirstLine(filePath);
-
-			if(string.IsNullOrWhiteSpace(firstLine))
-			{
-				return null;
-			}
-
-			var headers = firstLine.Split(",", StringSplitOptions.RemoveEmptyEntries);
+			var headers = firstLine.Split('_', StringSplitOptions.RemoveEmptyEntries);
 			return new FileModel(filePath, headers);
 		}
 
@@ -59,15 +40,6 @@ namespace Tarydium.CSVLINQPadDriver
 			using var reader = new StreamReader(stream);
 
 			return await reader.ReadLineAsync();
-		}
-
-		private static string? GetFirstLine(string filePath)
-		{
-			using var stream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-
-			using var reader = new StreamReader(stream);
-
-			return reader.ReadLine();
 		}
 
 		private static IEnumerable<string> GetFiles(string path)

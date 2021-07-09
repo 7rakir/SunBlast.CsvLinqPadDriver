@@ -67,15 +67,6 @@ namespace Tarydium.CSVLINQPadDriver
 				schemaBuilder.AddModel(fileModel);
 			}
 		}
-		
-		private static void ApplyModel(string path, SyntaxTreeBuilder syntaxTreeBuilder, SchemaBuilder schemaBuilder)
-		{
-			foreach (var fileModel in ModelReader.GetSchemaModel(path))
-			{
-				syntaxTreeBuilder.AddModel(fileModel);
-				schemaBuilder.AddModel(fileModel);
-			}
-		}
 
 		public static void WriteToLog(string message) => WriteToLog(message, "Tarydium");
 	}
