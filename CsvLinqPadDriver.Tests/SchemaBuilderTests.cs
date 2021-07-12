@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using NUnit.Framework;
 
-namespace Tarydium.CSVLINQPadDriver.Tests
+namespace CsvLinqPadDriver.Tests
 {
 	[TestFixture]
 	public class SchemaBuilderTests

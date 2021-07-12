@@ -15,7 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CsvParser\CsvParser.csproj" />
-    <ProjectReference Include="..\Tarydium.CSVLINQPadDriver\Tarydium.CSVLINQPadDriver.csproj" />
+    <ProjectReference Include="..\CsvLinqPadDriver\CsvLinqPadDriver.csproj" />
   </ItemGroup>
 
   <ItemGroup>

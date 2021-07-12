@@ -2,7 +2,7 @@
 using System.Linq;
 using LINQPad.Extensibility.DataContext;
 
-namespace Tarydium.CSVLINQPadDriver
+namespace CsvLinqPadDriver
 {
 	public class SchemaBuilder
 	{
@@ -54,7 +54,7 @@ namespace Tarydium.CSVLINQPadDriver
 			return new(fileModel.ClassName, ExplorerItemKind.QueryableObject, ExplorerIcon.Table)
 			{
 				IsEnumerable = true,
-				Children = fileModel.Headers.Select(GetPropertyExplorerItem).ToList(),
+				Children = fileModel.Headers.Select(GetPropertyExplorerItem).ToList()
 			};
 		}
 

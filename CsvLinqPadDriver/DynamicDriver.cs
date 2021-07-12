@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Tarydium.CSVLINQPadDriver
+namespace CsvLinqPadDriver
 {
 	public class DynamicDriver : DynamicDataContextDriver
 	{
@@ -15,7 +15,7 @@ namespace Tarydium.CSVLINQPadDriver
 		{
 			AppDomain.CurrentDomain.FirstChanceException += (sender, args) =>
 			{
-				if(args.Exception.StackTrace?.Contains("Tarydium.CSVLINQPadDriver") is true)
+				if(args.Exception.StackTrace?.Contains("CsvLinqPadDriver") is true)
 					Debugger.Launch();
 			};
 		}

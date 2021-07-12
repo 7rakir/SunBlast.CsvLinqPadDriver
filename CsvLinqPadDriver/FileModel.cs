@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text.RegularExpressions;
 
-namespace Tarydium.CSVLINQPadDriver
+namespace CsvLinqPadDriver
 {
 	public class FileModel
 	{

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml.Linq;
 
-namespace Tarydium.CSVLINQPadDriver
+namespace CsvLinqPadDriver
 {
 	/// <summary>
 	/// Wrapper to read/write connection properties. This acts as our ViewModel - we will bind to it in ConnectionDialog.xaml.

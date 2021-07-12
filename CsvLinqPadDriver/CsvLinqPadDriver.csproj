@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net5.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
-    <AssemblyName>Tarydium.CSVLINQPadDriver</AssemblyName>
+    <AssemblyName>CsvLinqPadDriver</AssemblyName>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageTags>linqpaddriver</PackageTags>
     <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
@@ -11,7 +11,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants>NETCORE</DefineConstants>
-    <Version>2.3.2</Version>
+    <Version>2.4.0</Version>
     <Product>CSV LINQPad Driver</Product>
     <Company>Tarydium</Company>
     <Authors>Drakir</Authors>

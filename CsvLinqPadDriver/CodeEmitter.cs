@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 
-namespace Tarydium.CSVLINQPadDriver
+namespace CsvLinqPadDriver
 {
 	public static class CodeEmitter
 	{

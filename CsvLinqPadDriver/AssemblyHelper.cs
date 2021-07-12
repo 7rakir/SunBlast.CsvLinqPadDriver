@@ -3,7 +3,7 @@ using System.Linq;
 using LINQPad.Extensibility.DataContext;
 using Microsoft.CodeAnalysis;
 
-namespace Tarydium.CSVLINQPadDriver
+namespace CsvLinqPadDriver
 {
     public static class AssemblyHelper
     {

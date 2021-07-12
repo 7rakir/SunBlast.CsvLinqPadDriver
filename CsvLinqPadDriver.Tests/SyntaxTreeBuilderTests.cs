@@ -1,7 +1,7 @@
 using Microsoft.CodeAnalysis;
 using NUnit.Framework;
 
-namespace Tarydium.CSVLINQPadDriver.Tests
+namespace CsvLinqPadDriver.Tests
 {
 	[TestFixture]
 	public class SyntaxTreeBuilderTests

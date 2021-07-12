@@ -3,7 +3,7 @@ using System.IO;
 using CsvParser;
 using NUnit.Framework;
 
-namespace Tarydium.CSVLINQPadDriver.Tests
+namespace CsvLinqPadDriver.Tests
 {
 	[TestFixture]
 	public class CsvReaderTests

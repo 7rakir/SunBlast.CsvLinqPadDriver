@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using LINQPad.Extensibility.DataContext;
 using Microsoft.CodeAnalysis;
 
-namespace Tarydium.CSVLINQPadDriver.Tests
+namespace CsvLinqPadDriver.Tests
 {
     public static class DataGeneration
     {
