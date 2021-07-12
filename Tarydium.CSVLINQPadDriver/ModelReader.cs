@@ -29,7 +29,7 @@ namespace Tarydium.CSVLINQPadDriver
 				return null;
 			}
 
-			var headers = firstLine.Split('_', StringSplitOptions.RemoveEmptyEntries);
+			var headers = firstLine.Split(',', StringSplitOptions.RemoveEmptyEntries);
 			return new FileModel(filePath, headers);
 		}
 
