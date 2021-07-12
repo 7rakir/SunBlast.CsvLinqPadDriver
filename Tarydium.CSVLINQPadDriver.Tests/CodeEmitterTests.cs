@@ -1,12 +1,8 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime;
-using CsvParser;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using NUnit.Framework;
@@ -27,14 +23,12 @@ namespace Tarydium.CSVLINQPadDriver.Tests
         	var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
         	
         	var assemblyPath = Path.GetDirectoryName(typeof(object).Assembly.Location)!;
-
-        	var references = new string[]{}
-        		.Append(typeof(CsvReader).Assembly.Location)
+            
+            var references = new string[]{}
+        		.Append(AssemblyHelper.CsvReaderAssemblyLocation)
         		.Append(typeof(object).Assembly.Location)
         		.Append(typeof(Enumerable).Assembly.Location)
-        		.Append(typeof(GCSettings).Assembly.Location)
-        		.Append(typeof(ICollection).Assembly.Location)
-        		.Append(Path.Combine(assemblyPath, "System.Runtime.dll"))
+                .Append(Path.Combine(assemblyPath, "System.Runtime.dll"))
         		.Select(x => MetadataReference.CreateFromFile(x));
 
         	var watch = Stopwatch.StartNew();
@@ -53,7 +47,7 @@ namespace Tarydium.CSVLINQPadDriver.Tests
         	
         	Assert.That(result.Success, Is.True, String.Join(Environment.NewLine, errorMessage));
         	
-        	Assert.That(watch.ElapsedMilliseconds, Is.LessThan(1700));
+        	Assert.That(watch.ElapsedMilliseconds, Is.LessThan(1750));
         }
     }
 }

@@ -1,5 +1,4 @@
 using LINQPad.Extensibility.DataContext;
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

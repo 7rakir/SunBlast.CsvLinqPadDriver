@@ -2,7 +2,6 @@
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using LINQPad.Extensibility.DataContext;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
@@ -11,18 +10,10 @@ namespace Tarydium.CSVLINQPadDriver
 {
 	public static class CodeEmitter
 	{
-		static CodeEmitter()
-		{
-			CsvReaderAssemblyLocation = typeof(CsvParser.CsvReader).Assembly.Location;
-			DataContextDriver.LoadAssemblySafely(CsvReaderAssemblyLocation);
-		}
-
-		private static string CsvReaderAssemblyLocation { get; }
-
 		public static void Emit(SyntaxTree syntaxTree, AssemblyName assembly)
 		{
 			var compilation = GetCompilation(assembly, syntaxTree);
-			
+
 			using var fileStream = File.OpenWrite(assembly.CodeBase!);
 			
 			var result = compilation.Emit(fileStream);
@@ -37,10 +28,8 @@ namespace Tarydium.CSVLINQPadDriver
 		{
 			var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
 
-			var references = DataContextDriver
-				.GetCoreFxReferenceAssemblies()
-				.Append(CsvReaderAssemblyLocation)
-				.Select(x => MetadataReference.CreateFromFile(x));
+			AssemblyHelper.LoadAssemblies();
+			var references = AssemblyHelper.GetReferences();
 
 			return CSharpCompilation
 				.Create(assembly.FullName)
