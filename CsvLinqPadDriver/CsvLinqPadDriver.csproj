@@ -6,12 +6,12 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageTags>linqpaddriver</PackageTags>
     <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
-    <PackageVersion>2.4.1</PackageVersion>
+    <PackageVersion>2.5.0</PackageVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants>NETCORE</DefineConstants>
-    <Version>2.4.1</Version>
+    <Version>2.5.0</Version>
     <Product>CSV LINQPad Driver</Product>
     <Company>SunBlast</Company>
     <Authors>Drakir</Authors>

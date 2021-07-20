@@ -68,5 +68,7 @@ namespace CsvLinqPadDriver
 		}
 
 		public static void WriteToLog(string message) => WriteToLog(message, "Tarydium");
+
+		public override IEnumerable<string> GetNamespacesToAdd(IConnectionInfo cxInfo) => new[] {"CsvLinqPadDriver.Extensions"};
 	}
 }
