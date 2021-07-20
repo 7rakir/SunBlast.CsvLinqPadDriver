@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.Emit;
 
 namespace CsvLinqPadDriver
 {
-	public static class CodeEmitter
+	internal static class CodeEmitter
 	{
 		public static void Emit(SyntaxTree syntaxTree, AssemblyName assembly)
 		{

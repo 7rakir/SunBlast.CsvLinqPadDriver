@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis;
 
 namespace CsvLinqPadDriver.Tests
 {
-    public static class DataGeneration
+    internal static class DataGeneration
     {
         public static IEnumerable<FileModel> GetLargeSchemaModel()
         {

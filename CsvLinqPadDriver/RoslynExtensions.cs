@@ -4,7 +4,7 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace CsvLinqPadDriver
 {
-	public static class RoslynExtensions
+	internal static class RoslynExtensions
 	{
 		public static InvocationExpressionSyntax WithSingleArgument(this InvocationExpressionSyntax invocation, ExpressionSyntax expression)
 		{

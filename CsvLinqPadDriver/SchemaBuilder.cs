@@ -4,7 +4,7 @@ using LINQPad.Extensibility.DataContext;
 
 namespace CsvLinqPadDriver
 {
-	public class SchemaBuilder
+	internal class SchemaBuilder
 	{
 		private readonly SortedDictionary<string, SortedDictionary<string, FileModel>> schema = new();
 

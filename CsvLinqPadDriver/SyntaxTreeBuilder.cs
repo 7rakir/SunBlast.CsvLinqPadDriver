@@ -10,7 +10,7 @@ using static CsvLinqPadDriver.RoslynExtensions;
 
 namespace CsvLinqPadDriver
 {
-	public class SyntaxTreeBuilder
+	internal class SyntaxTreeBuilder
 	{
 		private ClassDeclarationSyntax contextClass;
 

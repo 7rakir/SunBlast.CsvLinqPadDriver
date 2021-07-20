@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace CsvLinqPadDriver
 {
-	public class FileModel
+	internal class FileModel
 	{
 		private const string InvalidCharactersRegex = @"[^\p{Ll}\p{Lu}\p{Lt}\p{Lo}\p{Nd}\p{Nl}\p{Mn}\p{Mc}\p{Cf}\p{Pc}\p{Lm}]";
 		private static readonly Regex Regex = new(InvalidCharactersRegex);

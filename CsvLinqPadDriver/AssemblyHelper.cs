@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis;
 
 namespace CsvLinqPadDriver
 {
-    public static class AssemblyHelper
+    internal static class AssemblyHelper
     {
         public static readonly string CsvReaderAssemblyLocation = typeof(CsvParser.CsvReader).Assembly.Location;
 

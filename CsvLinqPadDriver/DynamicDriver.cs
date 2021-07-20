@@ -9,7 +9,7 @@ using System.Windows.Forms;
 
 namespace CsvLinqPadDriver
 {
-	public class DynamicDriver : DynamicDataContextDriver
+	internal class DynamicDriver : DynamicDataContextDriver
 	{
 		static DynamicDriver()
 		{
