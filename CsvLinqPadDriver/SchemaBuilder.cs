@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using LINQPad.Extensibility.DataContext;
+using System.Collections.Generic;
 using System.Linq;
-using LINQPad.Extensibility.DataContext;
 
 namespace CsvLinqPadDriver
 {
@@ -11,7 +11,7 @@ namespace CsvLinqPadDriver
 		public void AddModel(FileModel fileModel)
 		{
 			var prefix = fileModel.Prefix ?? fileModel.ClassName;
-			if(!schema.TryGetValue(prefix, out var category))
+			if (!schema.TryGetValue(prefix, out var category))
 			{
 				category = new SortedDictionary<string, FileModel>();
 				schema.Add(prefix, category);
@@ -24,13 +24,13 @@ namespace CsvLinqPadDriver
 		{
 			return GetExplorerItems().ToList();
 		}
-		
+
 		private IEnumerable<ExplorerItem> GetExplorerItems()
 		{
-			foreach(var (prefix, category) in schema)
+			foreach (var (prefix, category) in schema)
 			{
 				int categoryCount = category.Values.Count;
-				if(categoryCount == 1)
+				if (categoryCount == 1)
 				{
 					yield return GetModelExplorerItem(category.Values.Single());
 				}

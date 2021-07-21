@@ -31,7 +31,7 @@ namespace CsvLinqPadDriver
 		{
 			return declarationSyntax.AddModifiers(Token(SyntaxKind.PublicKeyword));
 		}
-		
+
 		public static ClassDeclarationSyntax AsPublic(this ClassDeclarationSyntax declarationSyntax)
 		{
 			return declarationSyntax.AddModifiers(Token(SyntaxKind.PublicKeyword));

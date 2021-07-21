@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Emit;
+using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Emit;
 
 namespace CsvLinqPadDriver
 {
@@ -15,10 +15,10 @@ namespace CsvLinqPadDriver
 			var compilation = GetCompilation(assembly, syntaxTree);
 
 			using var fileStream = File.OpenWrite(assembly.CodeBase!);
-			
+
 			var result = compilation.Emit(fileStream);
-			
-			if(!result.Success)
+
+			if (!result.Success)
 			{
 				LogError(result);
 			}
@@ -37,7 +37,7 @@ namespace CsvLinqPadDriver
 				.AddReferences(references)
 				.AddSyntaxTrees(syntaxTree);
 		}
-		
+
 		private static void LogError(EmitResult result)
 		{
 			var message = string.Join(Environment.NewLine,

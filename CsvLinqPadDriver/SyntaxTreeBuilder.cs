@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 using static CsvLinqPadDriver.RoslynExtensions;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace CsvLinqPadDriver
 {
@@ -33,7 +33,7 @@ namespace CsvLinqPadDriver
 		public SyntaxTree Build(string nameSpace)
 		{
 			var members = dataClasses.Prepend(contextClass).ToArray();
-			
+
 			var namespaceDeclaration = NamespaceDeclaration(ParseName(nameSpace)).AddMembers(members);
 
 			var usingList = GetUsingDirectives().ToArray();
@@ -82,7 +82,7 @@ namespace CsvLinqPadDriver
 		{
 			public static ClassDeclarationSyntax CreateClass(FileModel model)
 			{
-				if(!CodeGenerator.IsValidLanguageIndependentIdentifier(model.ClassName))
+				if (!CodeGenerator.IsValidLanguageIndependentIdentifier(model.ClassName))
 				{
 					throw new ArgumentException($"Invalid name '{model.ClassName}'", model.ClassName);
 				}

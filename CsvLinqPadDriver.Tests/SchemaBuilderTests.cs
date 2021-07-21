@@ -27,7 +27,7 @@ namespace CsvLinqPadDriver.Tests
 		[Test]
 		public void GenerateSchemaForModel_SchemaShouldBeProperlySegmented()
 		{
-			var singleHeader = new[] {"Header1"};
+			var singleHeader = new[] { "Header1" };
 
 			var fileModels = new[]
 			{

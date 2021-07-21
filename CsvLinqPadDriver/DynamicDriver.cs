@@ -1,7 +1,5 @@
 using LINQPad.Extensibility.DataContext;
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -11,15 +9,6 @@ namespace CsvLinqPadDriver
 {
 	internal class DynamicDriver : DynamicDataContextDriver
 	{
-		static DynamicDriver()
-		{
-			AppDomain.CurrentDomain.FirstChanceException += (sender, args) =>
-			{
-				if(args.Exception.StackTrace?.Contains("CsvLinqPadDriver") is true)
-					Debugger.Launch();
-			};
-		}
-
 		public override string Name => "CSV to LINQ driver";
 
 		public override string Author => "Drakir";
@@ -29,9 +18,9 @@ namespace CsvLinqPadDriver
 
 		public override bool ShowConnectionDialog(IConnectionInfo cxInfo, ConnectionDialogOptions dialogOptions)
 		{
-			var dialog = new FolderBrowserDialog()
+			var dialog = new FolderBrowserDialog
 			{
-				Description = "Select a folder containing the desired CSV files", 
+				Description = "Select a folder containing the desired CSV files",
 				UseDescriptionForTitle = true
 			};
 			if (dialog.ShowDialog() == DialogResult.OK)
@@ -49,12 +38,12 @@ namespace CsvLinqPadDriver
 
 			var syntaxTreeBuilder = new SyntaxTreeBuilder(typeName);
 			var schemaBuilder = new SchemaBuilder();
-			
+
 			ApplyModelAsync(path, syntaxTreeBuilder, schemaBuilder).Wait();
 
 			var tree = syntaxTreeBuilder.Build(nameSpace);
 			CodeEmitter.Emit(tree, assemblyToBuild);
-			
+
 			return schemaBuilder.BuildSchema().ToList();
 		}
 
@@ -67,8 +56,8 @@ namespace CsvLinqPadDriver
 			}
 		}
 
-		public static void WriteToLog(string message) => WriteToLog(message, "Tarydium");
+		public static void WriteToLog(string message) => WriteToLog(message, "SunBlast.CsvLinqPadDriver");
 
-		public override IEnumerable<string> GetNamespacesToAdd(IConnectionInfo cxInfo) => new[] {"CsvLinqPadDriver.Extensions"};
+		public override IEnumerable<string> GetNamespacesToAdd(IConnectionInfo cxInfo) => new[] { "CsvLinqPadDriver.Extensions" };
 	}
 }

@@ -13,7 +13,7 @@ namespace CsvLinqPadDriver.Tests
 			{
 				new FileModel("Model.extension", new[] {"Header1", "Header-2"})
 			};
-			
+
 			var tree = DataGeneration.GetSyntaxTree(schema);
 
 			var result = tree.GetRoot().NormalizeWhitespace().ToFullString();

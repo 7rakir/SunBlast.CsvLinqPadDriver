@@ -34,7 +34,7 @@ namespace CsvLinqPadDriver
 
 			result = Regex.Replace(result, "_");
 
-			if(!char.IsLetter(result, 0))
+			if (!char.IsLetter(result, 0))
 			{
 				result = result.Insert(0, "_");
 			}
