@@ -1,41 +1,48 @@
 using LINQPad.Extensibility.DataContext;
 using Microsoft.CodeAnalysis;
+using System;
 using System.Collections.Generic;
 
 namespace CsvLinqPadDriver.Tests
 {
-	internal static class DataGeneration
-	{
-		public static IEnumerable<FileModel> GetLargeSchemaModel()
-		{
-			for (int i = 0; i < 1000; i++)
-			{
-				yield return new FileModel($"File{i:000}.csv",
-					new[]
-					{
-						"Header1", "Header2", "Header3", "Header4", "Header5", "Header6", "Header7", "Header8", "Header9"
-					});
-			}
-		}
+    internal static class DataGeneration
+    {
+        public static IEnumerable<FileModel> GetLargeSchemaModel()
+        {
+            var data = new DataDescription(new[]
+                {
+                    "Header1", "Header2", "Header3", "Header4", "Header5", "Header6", "Header7", "Header8", "Header9"
+                },
+                true);
 
-		public static SyntaxTree GetSyntaxTree(IEnumerable<FileModel> schemaModel)
-		{
-			var syntaxTreeBuilder = new SyntaxTreeBuilder("TestContextClass");
-			foreach (var fileModel in schemaModel)
-			{
-				syntaxTreeBuilder.AddModel(fileModel);
-			}
-			return syntaxTreeBuilder.Build("TestNamespace");
-		}
+            for (int i = 0; i < 1000; i++)
+            {
+                var file = new FileDescription($"File{i:000}.csv", 0, DateTime.MinValue);
 
-		public static IEnumerable<ExplorerItem> GetSchema(IEnumerable<FileModel> schemaModel)
-		{
-			var builder = new SchemaBuilder();
-			foreach (var fileModel in schemaModel)
-			{
-				builder.AddModel(fileModel);
-			}
-			return builder.BuildSchema();
-		}
-	}
+                yield return new FileModel(file, data);
+            }
+        }
+
+        public static SyntaxTree GetSyntaxTree(IEnumerable<FileModel> schemaModel)
+        {
+            var syntaxTreeBuilder = new SyntaxTreeBuilder("TestContextClass");
+            foreach (var fileModel in schemaModel)
+            {
+                syntaxTreeBuilder.AddModel(fileModel);
+            }
+
+            return syntaxTreeBuilder.Build("TestNamespace");
+        }
+
+        public static IEnumerable<ExplorerItem> GetSchema(IEnumerable<FileModel> schemaModel)
+        {
+            var builder = new SchemaBuilder();
+            foreach (var fileModel in schemaModel)
+            {
+                builder.AddModel(fileModel);
+            }
+
+            return builder.BuildSchema();
+        }
+    }
 }

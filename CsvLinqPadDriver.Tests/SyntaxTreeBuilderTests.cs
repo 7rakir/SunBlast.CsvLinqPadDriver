@@ -1,5 +1,6 @@
 using Microsoft.CodeAnalysis;
 using NUnit.Framework;
+using System;
 
 namespace CsvLinqPadDriver.Tests
 {
@@ -9,9 +10,13 @@ namespace CsvLinqPadDriver.Tests
 		[Test]
 		public void GenerateSyntaxTree()
 		{
+			var file = new FileDescription("Model.extension", 0, DateTime.MinValue);
+
+			var data = new DataDescription(new[] { "Header1", "Header-2" }, true);
+
 			var schema = new[]
 			{
-				new FileModel("Model.extension", new[] {"Header1", "Header-2"})
+				new FileModel(file, data)
 			};
 
 			var tree = DataGeneration.GetSyntaxTree(schema);
@@ -22,6 +27,7 @@ namespace CsvLinqPadDriver.Tests
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using CsvLinqPadDriver.DataExtensions;
 using CsvParser;
 
 namespace TestNamespace
@@ -32,10 +38,13 @@ namespace TestNamespace
 
     public class Model
     {
-        public string Header1 { get set }
-
-        public string Header-2 { get set }
+        public string Header1;
+        public string Header-2;
     }
+
+    public static class ModelExtensions
+    {
+        public static IEnumerable<Nodes> WhereDelayed(this IEnumerable<Nodes> enumerable, DateTime timeOfGatheringDiagnostics) => enumerable.WhereDelayed<Nodes>(timeOfGatheringDiagnostics)public static IEnumerable<CortexDocument> Parse(this IEnumerable<Cortex_Documents> enumerable) => enumerable.ParseCortex()}
 }";
 
 			Assert.AreEqual(expectedOutput, result);

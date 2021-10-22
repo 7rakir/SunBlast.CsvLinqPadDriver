@@ -1,5 +1,7 @@
 using LINQPad.Extensibility.DataContext;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -9,6 +11,15 @@ namespace CsvLinqPadDriver
 {
 	internal class DynamicDriver : DynamicDataContextDriver
 	{
+		static DynamicDriver()
+		{
+			AppDomain.CurrentDomain.FirstChanceException += (sender, args) =>
+			{
+				if(args.Exception.StackTrace?.Contains("CsvLinqPadDriver") is true)
+					Debugger.Launch();
+			};
+		}
+
 		public override string Name => "CSV to LINQ driver";
 
 		public override string Author => "Drakir";
@@ -56,7 +67,7 @@ namespace CsvLinqPadDriver
 			}
 		}
 
-		public static void WriteToLog(string message) => WriteToLog(message, "SunBlast.CsvLinqPadDriver");
+		public static void WriteToLog(string message) => WriteToLog(message, "SunBlast.CsvLinqPadDriver.log");
 
 		public override IEnumerable<string> GetNamespacesToAdd(IConnectionInfo cxInfo) => new[] { "CsvLinqPadDriver.Extensions" };
 	}

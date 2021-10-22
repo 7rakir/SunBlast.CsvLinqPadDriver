@@ -21,17 +21,18 @@ namespace CsvLinqPadDriver.Tests
 		[Test]
 		public void GenerateSchemaForModel_SchemaShouldBeProperlySegmented()
 		{
-			var singleHeader = new[] { "Header1" };
+			var dataDescription = new DataDescription(new[] { "Header1" }, true);
 
-			var fileModels = new[]
-			{
-				new FileModel("CCC", singleHeader),
-				new FileModel("A_1", singleHeader),
-				new FileModel("BBB", singleHeader),
-				new FileModel("C_1", singleHeader),
-				new FileModel("DDD", singleHeader),
-				new FileModel("A_2", singleHeader),
+			var fileDescriptions = new[] {
+				new FileDescription("CCC", 1, DateTime.MinValue),
+				new FileDescription("A_1", 2, DateTime.MinValue),
+				new FileDescription("BBB", 3, DateTime.MinValue),
+				new FileDescription("C_1", 4, DateTime.MinValue),
+				new FileDescription("DDD", 5, DateTime.MinValue),
+				new FileDescription("A_2", 6, DateTime.MinValue)
 			};
+
+			var fileModels = fileDescriptions.Select(f => new FileModel(f, dataDescription));
 
 			var result = DataGeneration.GetSchema(fileModels).ToArray();
 

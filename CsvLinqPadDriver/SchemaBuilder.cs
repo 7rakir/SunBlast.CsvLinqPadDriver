@@ -1,4 +1,5 @@
-﻿using LINQPad.Extensibility.DataContext;
+﻿using System;
+using LINQPad.Extensibility.DataContext;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -19,13 +20,8 @@ namespace CsvLinqPadDriver
 
 			category.Add(fileModel.ClassName, fileModel);
 		}
-
+		
 		public IEnumerable<ExplorerItem> BuildSchema()
-		{
-			return GetExplorerItems().ToList();
-		}
-
-		private IEnumerable<ExplorerItem> GetExplorerItems()
 		{
 			foreach (var (prefix, category) in schema)
 			{
@@ -36,31 +32,47 @@ namespace CsvLinqPadDriver
 				}
 				else
 				{
-					yield return GetCategoryExplorerItem($"{prefix} ({categoryCount})", category.Values.Select(GetModelExplorerItem).ToList());
+					yield return GetCategoryExplorerItem($"{prefix} ({categoryCount})", category.Values);
 				}
 			}
 		}
 
-		private static ExplorerItem GetCategoryExplorerItem(string prefix, List<ExplorerItem> models)
+		private static ExplorerItem GetCategoryExplorerItem(string text, IEnumerable<FileModel> fileModels)
 		{
-			return new(prefix, ExplorerItemKind.Category, ExplorerIcon.Schema)
+			return new(text, ExplorerItemKind.Category, ExplorerIcon.Schema)
 			{
-				Children = models,
+				Children = fileModels.Select(GetModelExplorerItem).ToList()
 			};
 		}
 
 		private static ExplorerItem GetModelExplorerItem(FileModel fileModel)
 		{
-			return new(fileModel.ClassName, ExplorerItemKind.QueryableObject, ExplorerIcon.Table)
+			if (!fileModel.HasData)
+			{
+				return new($"{fileModel.ClassName}", ExplorerItemKind.Property, ExplorerIcon.Blank)
+				{
+					IsEnumerable = false,
+					Children = fileModel.Headers.Select(GetPropertyExplorerItem).ToList(),
+					ToolTipText = GetToolTip(fileModel)
+				};
+			}
+			
+			return new($"{fileModel.ClassName}", ExplorerItemKind.QueryableObject, ExplorerIcon.Table)
 			{
 				IsEnumerable = true,
-				Children = fileModel.Headers.Select(GetPropertyExplorerItem).ToList()
+				Children = fileModel.Headers.Select(GetPropertyExplorerItem).ToList(),
+				ToolTipText = GetToolTip(fileModel)
 			};
 		}
 
 		private static ExplorerItem GetPropertyExplorerItem(string columnName)
 		{
 			return new(columnName, ExplorerItemKind.Property, ExplorerIcon.Column);
+		}
+
+		private static string GetToolTip(FileModel fileModel)
+		{
+			return $"Length: {fileModel.FileSize:N0} B{Environment.NewLine}Created: {fileModel.CreationTime:s}";
 		}
 	}
 }

@@ -15,15 +15,21 @@ namespace CsvLinqPadDriver
 
 		public string FilePath { get; }
 
+		public long FileSize { get; }
+
+		public DateTime CreationTime { get; }
+
 		public string[] Headers { get; }
+		
+		public bool HasData { get; }
 
-		public FileModel(string filePath, string[] headers)
+		public FileModel(FileDescription file, DataDescription data)
 		{
-			FilePath = filePath;
+			(FilePath, FileSize, CreationTime) = file;
 
-			Headers = headers;
+			(Headers, HasData) = data;
 
-			ClassName = GenerateValidIdentifierName(filePath);
+			ClassName = GenerateValidIdentifierName(FilePath);
 
 			Prefix = GetPrefix(ClassName);
 		}

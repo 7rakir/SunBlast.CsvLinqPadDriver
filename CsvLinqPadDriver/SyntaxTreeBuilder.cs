@@ -10,94 +10,133 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace CsvLinqPadDriver
 {
-	internal class SyntaxTreeBuilder
-	{
-		private ClassDeclarationSyntax contextClass;
+    internal class SyntaxTreeBuilder
+    {
+        private ClassDeclarationSyntax contextClass;
 
-		private readonly List<MemberDeclarationSyntax> dataClasses = new();
+        private readonly List<MemberDeclarationSyntax> dataClasses = new();
 
-		public SyntaxTreeBuilder(string className)
-		{
-			contextClass = ClassDeclaration(className).AsPublic();
-		}
+        public SyntaxTreeBuilder(string className)
+        {
+            contextClass = ClassDeclaration(className).AsPublic();
+        }
 
-		public void AddModel(FileModel fileModel)
-		{
-			dataClasses.Add(DataClassGenerator.CreateClass(fileModel));
+        public void AddModel(FileModel fileModel)
+        {
+            dataClasses.Add(DataClassGenerator.CreateClass(fileModel));
 
-			var property = ContextClassGenerator.CreateProperty(fileModel);
+            var property = ContextClassGenerator.CreateProperty(fileModel);
 
-			contextClass = contextClass.AddMembers(property);
-		}
+            contextClass = contextClass.AddMembers(property);
+        }
 
-		public SyntaxTree Build(string nameSpace)
-		{
-			var members = dataClasses.Prepend(contextClass).ToArray();
+        public SyntaxTree Build(string nameSpace)
+        {
+            var extensionClass = DataClassExtensionsGenerator.CreateClass();
 
-			var namespaceDeclaration = NamespaceDeclaration(ParseName(nameSpace)).AddMembers(members);
+            var members = dataClasses.Prepend(contextClass).Append(extensionClass).ToArray();
 
-			var usingList = GetUsingDirectives().ToArray();
+            var namespaceDeclaration = NamespaceDeclaration(ParseName(nameSpace)).AddMembers(members);
 
-			return CompilationUnit()
-				.AddUsings(usingList)
-				.AddMembers(namespaceDeclaration)
-				.SyntaxTree;
-		}
+            var usingList = GetUsingDirectives().ToArray();
 
-		private static IEnumerable<UsingDirectiveSyntax> GetUsingDirectives()
-		{
-			return new[]
-			{
-				"System",
-				"System.Collections.Generic",
-				"System.IO",
-				"System.Linq",
-				"CsvParser"
-			}.Select(name => UsingDirective(ParseName(name)));
-		}
+            return CompilationUnit()
+                .AddUsings(usingList)
+                .AddMembers(namespaceDeclaration)
+                .SyntaxTree;
+        }
 
-		private static class ContextClassGenerator
-		{
-			public static PropertyDeclarationSyntax CreateProperty(FileModel model)
-			{
-				return PropertyDeclaration(ParseTypeName($"IEnumerable<{model.ClassName}>"), model.ClassName)
-					.AsPublic()
-					.WithExpressionBody(
-						ArrowExpressionClause(
-							GetCsvReaderCall(model)));
-			}
+        private static IEnumerable<UsingDirectiveSyntax> GetUsingDirectives()
+        {
+            return new[]
+            {
+                "System",
+                "System.Collections.Generic",
+                "System.IO",
+                "System.Linq",
+                "CsvLinqPadDriver.DataExtensions",
+                "CsvParser",
+            }.Select(name => UsingDirective(ParseName(name)));
+        }
 
-			private static InvocationExpressionSyntax GetCsvReaderCall(FileModel model)
-			{
-				return InvocationExpression(
-					MemberAccessExpression(
-						SyntaxKind.SimpleMemberAccessExpression,
-						IdentifierName("CsvReader"),
-						GenericName("ReadFile").WithSingleTypeArgument(IdentifierName(model.ClassName)))
-					).WithSingleArgument(CreateStringLiteral(model.FilePath));
-			}
-		}
+        private static class ContextClassGenerator
+        {
+            public static MemberDeclarationSyntax CreateProperty(FileModel model)
+            {
+                return PropertyDeclaration(EnumerableType(model.ClassName), model.ClassName)
+                    .AsPublic()
+                    .Returning(
+                        "CsvReader",
+                        Type("ReadFile", model.ClassName),
+                        CreateStringLiteral(model.FilePath));
+            }
+        }
 
-		private static class DataClassGenerator
-		{
-			public static ClassDeclarationSyntax CreateClass(FileModel model)
-			{
-				if (!CodeGenerator.IsValidLanguageIndependentIdentifier(model.ClassName))
-				{
-					throw new ArgumentException($"Invalid name '{model.ClassName}'", model.ClassName);
-				}
+        private static class DataClassGenerator
+        {
+            public static ClassDeclarationSyntax CreateClass(FileModel model)
+            {
+                if (!CodeGenerator.IsValidLanguageIndependentIdentifier(model.ClassName))
+                {
+                    throw new ArgumentException($"Invalid name '{model.ClassName}'", model.ClassName);
+                }
 
-				var property = model.Headers.Select(CreateProperty).ToArray();
+                var properties = model.Headers.Select(CreateProperty).ToArray();
 
-				return ClassDeclaration(model.ClassName).AsPublic().AddMembers(property);
-			}
+                return ClassDeclaration(model.ClassName).AsPublic().AddMembers(properties);
+            }
 
-			private static MemberDeclarationSyntax CreateProperty(string propertyName)
-			{
-				return PropertyDeclaration(ParseTypeName("string"), propertyName)
-					.AsPublic()
-					.AddAccessorListAccessors(AccessorDeclaration(SyntaxKind.GetAccessorDeclaration), AccessorDeclaration(SyntaxKind.SetAccessorDeclaration));
-			}
-		}
-	}
+            private static MemberDeclarationSyntax CreateProperty(string propertyName)
+            {
+                return FieldDeclaration(VariableDeclaration(PredefinedType(Token(SyntaxKind.StringKeyword)))
+                        .AddVariables(VariableDeclarator(propertyName)))
+                    .AddModifiers(Token(SyntaxKind.PublicKeyword));
+            }
+        }
+
+        private static class DataClassExtensionsGenerator
+        {
+            public static ClassDeclarationSyntax CreateClass()
+            {
+                var delayed = MethodDeclaration(EnumerableType("Nodes"), "WhereDelayed")
+                    .AsPublicStatic()
+                    .AddParameterListParameters(
+                        ThisParameter(EnumerableType("Nodes"), "enumerable"),
+                        Parameter("DateTime", "timeOfGatheringDiagnostics"))
+                    .Returning(
+                        "enumerable",
+                        Type("WhereDelayed", "Nodes"),
+                        IdentifierName("timeOfGatheringDiagnostics"));
+
+                var cortex = MethodDeclaration(EnumerableType("CortexDocument"), "Parse")
+                    .AsPublicStatic()
+                    .AddParameterListParameters(ThisParameter(EnumerableType("Cortex_Documents"), "enumerable"))
+                    .Returning("enumerable", IdentifierName("ParseCortex"));
+
+                return ClassDeclaration("ModelExtensions").AsPublicStatic().AddMembers(delayed, cortex);
+            }
+        }
+
+        private static ParameterSyntax ThisParameter(TypeSyntax type, string name)
+        {
+            return SyntaxFactory.Parameter(Identifier(name))
+                .WithModifiers(TokenList(Token(SyntaxKind.ThisKeyword)))
+                .WithType(type);
+        }
+
+        private static TypeSyntax EnumerableType(string typeName)
+        {
+            return Type("IEnumerable", typeName);
+        }
+
+        private static GenericNameSyntax Type(string name, string typeName)
+        {
+            return GenericName(name).AddTypeArgumentListArguments(IdentifierName(typeName));
+        }
+
+        private static ParameterSyntax Parameter(string type, string name)
+        {
+            return SyntaxFactory.Parameter(Identifier(name)).WithType(IdentifierName(type));
+        }
+    }
 }

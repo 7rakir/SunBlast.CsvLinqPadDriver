@@ -4,19 +4,29 @@
     <UseWindowsForms>true</UseWindowsForms>
     <AssemblyName>SunBlast.CsvLinqPadDriver</AssemblyName>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageTags>linqpaddriver</PackageTags>
+    <PackageTags>linqpaddriver;csv</PackageTags>
     <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
-    <PackageVersion>2.5.0</PackageVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <PropertyGroup>
-    <DefineConstants>NETCORE</DefineConstants>
-    <Version>2.5.0</Version>
+    <Version>2.6.0</Version>
     <Product>CSV LINQPad Driver</Product>
     <Company>SunBlast</Company>
     <Authors>Drakir</Authors>
     <Description>Lightweight LINQPad Driver for CSV files.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/7rakir/SunBlast.CsvLinqPadDriver</PackageProjectUrl>
+    <SignAssembly>False</SignAssembly>
+    <RepositoryUrl>https://github.com/7rakir/SunBlast.CsvLinqPadDriver</RepositoryUrl>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>$(DefineConstants)</DefineConstants>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>$(DefineConstants)</DefineConstants>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="linqpad-samples\**" />
@@ -26,11 +36,13 @@
   </ItemGroup>
   <ItemGroup>
     <!-- Even though the package is not needed in this project, it is needed in the CsvParser project. Without it, the code would fail at runtime. https://github.com/nuget/home/issues/3891#issuecomment-718259362 -->
-    <PackageReference Include="CsvHelper" Version="26.0.0" />
-    <PackageReference Include="LINQPad.Reference" Version="1.*" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.10.0" />
+    <PackageReference Include="CsvHelper" Version="27.1.1" />
+    <PackageReference Include="LINQPad.Reference" Version="1.1.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.11.0" />
+    <PackageReference Include="System.Linq.Async" Version="5.0.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CsvLinqPadDriver.DataExtensions\CsvLinqPadDriver.DataExtensions.csproj" />
     <ProjectReference Include="..\CsvParser\CsvParser.csproj" PrivateAssets="all">
       <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
       <IncludeAssets>CsvParser.dll</IncludeAssets>
@@ -51,5 +63,8 @@
   </Target>
   <ItemGroup>
     <InternalsVisibleTo Include="CsvLinqPadDriver.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Extensions\" />
   </ItemGroup>
 </Project>

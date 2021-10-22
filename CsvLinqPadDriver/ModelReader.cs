@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace CsvLinqPadDriver
@@ -20,31 +21,44 @@ namespace CsvLinqPadDriver
 			}
 		}
 
-		private static async Task<FileModel?> GetModelAsync(string filePath)
+		private static async Task<FileModel?> GetModelAsync(FileDescription file)
 		{
-			var firstLine = await GetFirstLineAsync(filePath);
+			var data = await GetDataAsync(file.FullPath);
 
-			if (string.IsNullOrWhiteSpace(firstLine))
-			{
-				return null;
-			}
-
-			var headers = firstLine.Split(',', StringSplitOptions.RemoveEmptyEntries);
-			return new FileModel(filePath, headers);
+			return data is null ? null : new FileModel(file, data);
 		}
 
-		private static async Task<string?> GetFirstLineAsync(string filePath)
+		private static async Task<DataDescription?> GetDataAsync(string filePath)
 		{
 			await using var stream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
 			using var reader = new StreamReader(stream);
+			
+			var headerLine = await reader.ReadLineAsync();
 
-			return await reader.ReadLineAsync();
+			if (string.IsNullOrWhiteSpace(headerLine))
+			{
+				return null;
+			}
+			
+			var headers = headerLine.Split(',', StringSplitOptions.RemoveEmptyEntries);
+			
+			var dataLine = await reader.ReadLineAsync();
+
+			var hasData = !string.IsNullOrWhiteSpace(dataLine);
+
+			return new DataDescription(headers, hasData);
 		}
 
-		private static IEnumerable<string> GetFiles(string path)
+		private static IEnumerable<FileDescription> GetFiles(string path)
 		{
-			return Directory.EnumerateFiles(path, "*.csv");
+			return new DirectoryInfo(path)
+				.EnumerateFiles("*.csv", SearchOption.AllDirectories)
+				.Select(f => new FileDescription(f.FullName, f.Length, f.CreationTimeUtc));
 		}
 	}
+
+	internal record FileDescription(string FullPath, long Length, DateTime CreationTime);
+
+	internal record DataDescription(string[] Headers, bool HasData);
 }
