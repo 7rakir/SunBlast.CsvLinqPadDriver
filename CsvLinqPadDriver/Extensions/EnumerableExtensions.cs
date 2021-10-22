@@ -1,24 +1,20 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace CsvLinqPadDriver.Extensions
 {
-    // ReSharper disable UnusedType.Global
-    // ReSharper disable UnusedMember.Global
-    // ReSharper disable UnusedMember.Local
-    // ReSharper disable UnusedAutoPropertyAccessor.Global
-    // ReSharper disable MemberCanBePrivate.Global
-    // ReSharper disable MemberCanBePrivate.Local
-    
     public static class EnumerableExtensions
     {
-        public static RatioStatistic GetStatistics<T>(this IEnumerable<T> collection, Func<T, bool> predicate)
+        public static RatioStatistic<T> GetRatio<T>(this IEnumerable<T> collection,
+            Expression<Func<T, bool>> expression)
         {
             var list = collection.ToList();
             var count = list.Count;
+            Func<T, bool> predicate = expression.Compile().Invoke;
             var portion = list.Where(predicate).Count();
-            return new RatioStatistic(portion, count, GetPercent(portion, count));
+            return new RatioStatistic<T>(expression, portion, count, GetPercent(portion, count));
         }
 
         public static IOrderedEnumerable<KeyStatistic<TKey>> GetStatistics<T, TKey>(this IEnumerable<T> collection,
@@ -44,15 +40,27 @@ namespace CsvLinqPadDriver.Extensions
 
         private static double GetPercent(int count, int total)
         {
-            return Math.Round((double) count / total * 100, 1);
+            return Math.Round((double)count / total * 100, 1);
         }
         
         public record KeyStatistic<T>(T? Key, int Count, double Percent)
         {
+            private object ToDump() => new
+            {
+                Key,
+                Count,
+                Percent
+            };
         }
 
-        public record KeyStatistic<T>(T? Key, int Count, double Percent);
-        
-        public record RatioStatistic(int Count, int Total, double Percent);
+        public record RatioStatistic<T>(Expression<Func<T, bool>> Expression, int Count, int Total, double Percent)
+        {
+            private object ToDump() => new
+            {
+                Expression = Expression.ToString(), 
+                Ratio = $"{Count}/{Total}", 
+                Percent
+            };
+        }
     }
 }
