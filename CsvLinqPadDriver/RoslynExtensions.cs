@@ -39,27 +39,26 @@ namespace CsvLinqPadDriver
         public static MemberDeclarationSyntax Returning(this MethodDeclarationSyntax declarationSyntax, string target,
             SimpleNameSyntax call, params ExpressionSyntax[] callArguments)
         {
-            return declarationSyntax.WithExpressionBody(
-                ArrowExpressionClause(
-                    InvocationExpression(
-                            MemberAccessExpression(
-                                SyntaxKind.SimpleMemberAccessExpression,
-                                IdentifierName(target),
-                                call))
-                        .AddArgumentListArguments(callArguments.Select(Argument).ToArray())));
+            var arrow = ArrowExpressionClause(GetMemberAccessCall(target, call, callArguments));
+            return declarationSyntax.WithExpressionBody(arrow);
         }
-        
-        public static PropertyDeclarationSyntax Returning(this PropertyDeclarationSyntax declarationSyntax, string target,
+
+        public static PropertyDeclarationSyntax Returning(this PropertyDeclarationSyntax declarationSyntax,
+            string target,
             SimpleNameSyntax call, params ExpressionSyntax[] callArguments)
         {
-            return declarationSyntax.WithExpressionBody(
-                ArrowExpressionClause(
-                    InvocationExpression(
-                            MemberAccessExpression(
-                                SyntaxKind.SimpleMemberAccessExpression,
-                                IdentifierName(target),
-                                call))
-                        .AddArgumentListArguments(callArguments.Select(Argument).ToArray())));
+            var arrow = ArrowExpressionClause(GetMemberAccessCall(target, call, callArguments));
+            return declarationSyntax.WithExpressionBody(arrow);
+        }
+
+        private static InvocationExpressionSyntax GetMemberAccessCall(string target,
+            SimpleNameSyntax call, params ExpressionSyntax[] callArguments)
+        {
+            return InvocationExpression(MemberAccessExpression(
+                    SyntaxKind.SimpleMemberAccessExpression,
+                    IdentifierName(target),
+                    call))
+                .AddArgumentListArguments(callArguments.Select(Argument).ToArray());
         }
     }
 }
