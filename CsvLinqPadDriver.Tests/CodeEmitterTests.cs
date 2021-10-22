@@ -9,45 +9,44 @@ using System.Reflection;
 
 namespace CsvLinqPadDriver.Tests
 {
-    [TestFixture]
-    public class CodeEmitterTests
-    {
-        [Test]
-        public void CodeEmittingShouldBeReasonablySlow()
-        {
-        	var schemaModel = DataGeneration.GetLargeSchemaModel().ToArray();
-        	var syntaxTree = DataGeneration.GetSyntaxTree(schemaModel);
+	[TestFixture]
+	public class CodeEmitterTests
+	{
+		[Test]
+		public void CodeEmittingShouldBeReasonablySlow()
+		{
+			var schemaModel = DataGeneration.GetLargeSchemaModel().ToArray();
+			var syntaxTree = DataGeneration.GetSyntaxTree(schemaModel);
 
-        	var assembly = new AssemblyName("AssemblyName");
-        	
-        	var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
-        	
-        	var assemblyPath = Path.GetDirectoryName(typeof(object).Assembly.Location)!;
-            
-            var references = new string[]{}
-        		.Append(AssemblyHelper.CsvReaderAssemblyLocation)
-        		.Append(typeof(object).Assembly.Location)
-        		.Append(typeof(Enumerable).Assembly.Location)
-                .Append(Path.Combine(assemblyPath, "System.Runtime.dll"))
-        		.Select(x => MetadataReference.CreateFromFile(x));
+			var assembly = new AssemblyName("AssemblyName");
 
-        	var watch = Stopwatch.StartNew();
+			var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
 
-        	var compilation = CSharpCompilation.Create(assembly.FullName).AddSyntaxTrees(syntaxTree).AddReferences(references).WithOptions(options);
+			var assemblyPath = Path.GetDirectoryName(typeof(object).Assembly.Location)!;
 
-        	using var stream = new MemoryStream();
-        	
-        	var result = compilation.Emit(stream);
+			var references = new string[] {
+				AssemblyHelper.CsvReaderAssemblyLocation,
+				typeof(object).Assembly.Location,
+				typeof(Enumerable).Assembly.Location,
+				Path.Combine(assemblyPath, "System.Runtime.dll")
+			}.Select(x => MetadataReference.CreateFromFile(x));
 
-        	watch.Stop();
+			var references2 = AssemblyHelper.GetReferences();
 
-        	Console.WriteLine(watch.Elapsed);
-        	
-        	var errorMessage = result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).Select(d => d.GetMessage()).Take(5);
-        	
-        	Assert.That(result.Success, Is.True, String.Join(Environment.NewLine, errorMessage));
-        	
-        	Assert.That(watch.ElapsedMilliseconds, Is.LessThan(1750));
-        }
-    }
+			EmitResult? result;
+
+			using (DurationAssert.StartNew(2000))
+			{
+				var compilation = CSharpCompilation.Create(assembly.FullName).AddSyntaxTrees(syntaxTree).AddReferences(references2).WithOptions(options);
+
+				using var stream = new MemoryStream();
+
+				result = compilation.Emit(stream);
+			}
+
+			var errorMessage = result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).Select(d => d.GetMessage()).Take(5);
+
+			Assert.That(result.Success, Is.True, String.Join(Environment.NewLine, errorMessage));
+		}
+	}
 }
