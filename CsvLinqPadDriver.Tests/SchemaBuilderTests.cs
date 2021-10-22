@@ -1,7 +1,6 @@
-using System;
-using System.Diagnostics;
-using System.Linq;
 using NUnit.Framework;
+using System;
+using System.Linq;
 
 namespace CsvLinqPadDriver.Tests
 {
@@ -13,15 +12,10 @@ namespace CsvLinqPadDriver.Tests
 		{
 			var schemaModel = DataGeneration.GetLargeSchemaModel().ToArray();
 
-			var watch = Stopwatch.StartNew();
-
-			_ = DataGeneration.GetSchema(schemaModel).ToArray();
-
-			watch.Stop();
-
-			Console.WriteLine(watch.Elapsed);
-			
-			Assert.That(watch.ElapsedMilliseconds, Is.LessThan(10));
+			using (DurationAssert.StartNew(20))
+			{
+				_ = DataGeneration.GetSchema(schemaModel).ToArray();
+			}
 		}
 
 		[Test]
