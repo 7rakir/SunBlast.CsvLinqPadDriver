@@ -7,7 +7,8 @@ namespace CsvLinqPadDriver
 {
 	internal class SchemaBuilder
 	{
-		private readonly SortedDictionary<string, SortedDictionary<string, FileModel>> schema = new();
+		private readonly SortedDictionary<string, SortedDictionary<string, FileModel>> schema =
+			new(StringComparer.InvariantCultureIgnoreCase);
 
 		public void AddModel(FileModel fileModel)
 		{

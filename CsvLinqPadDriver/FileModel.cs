@@ -50,9 +50,24 @@ namespace CsvLinqPadDriver
 
 		private static string? GetPrefix(string className)
 		{
-			int underscoreIndex = className.IndexOf('_', StringComparison.Ordinal);
+			var customPrefixes = new[] { "alert", "cbqos", "netflow", "voip" };
 
-			return underscoreIndex == -1 ? null : className[..underscoreIndex];
+			foreach (var customPrefix in customPrefixes)
+			{
+				if (className.StartsWith(customPrefix, StringComparison.InvariantCultureIgnoreCase))
+				{
+					return className[..customPrefix.Length];
+				}
+			}
+			
+			int prefixIndex = className.IndexOf('_', StringComparison.Ordinal);
+
+			if (prefixIndex == -1)
+			{
+				return null;
+			}
+
+			return className[..prefixIndex];
 		}
 	}
 }
