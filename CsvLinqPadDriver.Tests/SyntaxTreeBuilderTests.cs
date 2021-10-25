@@ -44,6 +44,52 @@ namespace TestNamespace
 
     public static class ModelExtensions
     {
+    }
+}";
+
+			Assert.AreEqual(expectedOutput, result);
+		}
+		
+		[Test]
+		public void GenerateSyntaxTreeWithExtensionMethods()
+		{
+			var schema = new[]
+			{
+				new FileModel(
+					new FileDescription("Cortex_Documents.extension", 0, DateTime.MinValue),
+					new DataDescription(Array.Empty<string>(), false)),
+				new FileModel(
+					new FileDescription("Nodes.extension", 0, DateTime.MinValue),
+					new DataDescription(Array.Empty<string>(), false)),
+			};
+
+			var tree = DataGeneration.GetSyntaxTree(schema);
+
+			var result = tree.GetRoot().NormalizeWhitespace().ToFullString();
+
+			const string expectedOutput = @"using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using CsvLinqPadDriver.DataExtensions;
+using CsvParser;
+
+namespace TestNamespace
+{
+    public class TestContextClass
+    {
+        public IEnumerable<Cortex_Documents> Cortex_Documents => CsvReader.ReadFile<Cortex_Documents>(""Cortex_Documents.extension"")public IEnumerable<Nodes> Nodes => CsvReader.ReadFile<Nodes>(""Nodes.extension"")}
+
+    public class Cortex_Documents
+    {
+    }
+
+    public class Nodes
+    {
+    }
+
+    public static class ModelExtensions
+    {
         public static IEnumerable<Nodes> WhereDelayed(this IEnumerable<Nodes> enumerable, DateTime timeOfGatheringDiagnostics) => enumerable.WhereDelayed<Nodes>(timeOfGatheringDiagnostics)public static IEnumerable<CortexDocument> Parse(this IEnumerable<Cortex_Documents> enumerable) => enumerable.ParseCortex()}
 }";
 

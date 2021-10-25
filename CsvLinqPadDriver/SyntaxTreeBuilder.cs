@@ -16,6 +16,8 @@ namespace CsvLinqPadDriver
 
         private readonly List<MemberDeclarationSyntax> dataClasses = new();
 
+        private readonly HashSet<string> dataClassNames = new();
+
         public SyntaxTreeBuilder(string className)
         {
             contextClass = ClassDeclaration(className).AsPublic();
@@ -24,6 +26,7 @@ namespace CsvLinqPadDriver
         public void AddModel(FileModel fileModel)
         {
             dataClasses.Add(DataClassGenerator.CreateClass(fileModel));
+            dataClassNames.Add(fileModel.ClassName);
 
             var property = ContextClassGenerator.CreateProperty(fileModel);
 
@@ -32,7 +35,7 @@ namespace CsvLinqPadDriver
 
         public SyntaxTree Build(string nameSpace)
         {
-            var extensionClass = DataClassExtensionsGenerator.CreateClass();
+            var extensionClass = DataClassExtensionsGenerator.CreateClass(dataClassNames);
 
             var members = dataClasses.Prepend(contextClass).Append(extensionClass).ToArray();
 
@@ -94,11 +97,31 @@ namespace CsvLinqPadDriver
             }
         }
 
+        /// <summary>
+        /// Represents dynamically generated extensions.
+        /// E.g. if the schema model contains 'Nodes', node-related extensions are generated that in turn call 'dynamic' extensions from DataExtensions
+        /// </summary>
         private static class DataClassExtensionsGenerator
         {
-            public static ClassDeclarationSyntax CreateClass()
+            public static ClassDeclarationSyntax CreateClass(IReadOnlySet<string> dataClassNames)
             {
-                var delayed = MethodDeclaration(EnumerableType("Nodes"), "WhereDelayed")
+                var members = new List<MemberDeclarationSyntax>();
+
+                if (dataClassNames.Contains("Nodes"))
+                {
+                    members.Add(NodesDelayedExtension);
+                }
+
+                if (dataClassNames.Contains("Cortex_Documents"))
+                {
+                    members.Add(CortexParsingExtension);
+                }
+
+                return ClassDeclaration("ModelExtensions").AsPublicStatic().AddMembers(members.ToArray());
+            }
+
+            private static MemberDeclarationSyntax NodesDelayedExtension =>
+                MethodDeclaration(EnumerableType("Nodes"), "WhereDelayed")
                     .AsPublicStatic()
                     .AddParameterListParameters(
                         ThisParameter(EnumerableType("Nodes"), "enumerable"),
@@ -108,35 +131,11 @@ namespace CsvLinqPadDriver
                         Type("WhereDelayed", "Nodes"),
                         IdentifierName("timeOfGatheringDiagnostics"));
 
-                var cortex = MethodDeclaration(EnumerableType("CortexDocument"), "Parse")
+            private static MemberDeclarationSyntax CortexParsingExtension =>
+                MethodDeclaration(EnumerableType("CortexDocument"), "Parse")
                     .AsPublicStatic()
                     .AddParameterListParameters(ThisParameter(EnumerableType("Cortex_Documents"), "enumerable"))
                     .Returning("enumerable", IdentifierName("ParseCortex"));
-
-                return ClassDeclaration("ModelExtensions").AsPublicStatic().AddMembers(delayed, cortex);
-            }
-        }
-
-        private static ParameterSyntax ThisParameter(TypeSyntax type, string name)
-        {
-            return SyntaxFactory.Parameter(Identifier(name))
-                .WithModifiers(TokenList(Token(SyntaxKind.ThisKeyword)))
-                .WithType(type);
-        }
-
-        private static TypeSyntax EnumerableType(string typeName)
-        {
-            return Type("IEnumerable", typeName);
-        }
-
-        private static GenericNameSyntax Type(string name, string typeName)
-        {
-            return GenericName(name).AddTypeArgumentListArguments(IdentifierName(typeName));
-        }
-
-        private static ParameterSyntax Parameter(string type, string name)
-        {
-            return SyntaxFactory.Parameter(Identifier(name)).WithType(IdentifierName(type));
         }
     }
 }

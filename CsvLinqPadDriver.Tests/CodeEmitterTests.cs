@@ -15,29 +15,24 @@ namespace CsvLinqPadDriver.Tests
 		[Test]
 		public void CodeEmittingShouldBeReasonablySlow()
 		{
-			var schemaModel = DataGeneration.GetLargeSchemaModel().ToArray();
+			var schemaModel = DataGeneration.GetLargeSchemaModel();
 			var syntaxTree = DataGeneration.GetSyntaxTree(schemaModel);
 
 			var assembly = new AssemblyName("AssemblyName");
 
 			var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
 
-			var assemblyPath = Path.GetDirectoryName(typeof(object).Assembly.Location)!;
-
-			var references = new string[] {
-				AssemblyHelper.CsvReaderAssemblyLocation,
-				typeof(object).Assembly.Location,
-				typeof(Enumerable).Assembly.Location,
-				Path.Combine(assemblyPath, "System.Runtime.dll")
-			}.Select(x => MetadataReference.CreateFromFile(x));
-
-			var references2 = AssemblyHelper.GetReferences();
+			var references = AssemblyHelper.GetReferences();
 
 			EmitResult? result;
 
 			using (DurationAssert.StartNew(2000))
 			{
-				var compilation = CSharpCompilation.Create(assembly.FullName).AddSyntaxTrees(syntaxTree).AddReferences(references2).WithOptions(options);
+				var compilation = CSharpCompilation
+					.Create(assembly.FullName)
+					.AddSyntaxTrees(syntaxTree)
+					.AddReferences(references)
+					.WithOptions(options);
 
 				using var stream = new MemoryStream();
 

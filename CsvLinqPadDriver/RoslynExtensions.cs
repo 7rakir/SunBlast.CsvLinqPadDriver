@@ -36,18 +36,18 @@ namespace CsvLinqPadDriver
                 Token(SyntaxKind.StaticKeyword));
         }
 
-        public static MemberDeclarationSyntax Returning(this MethodDeclarationSyntax declarationSyntax, string target,
+        public static MemberDeclarationSyntax Returning(this MethodDeclarationSyntax declarationSyntax, string subject,
             SimpleNameSyntax call, params ExpressionSyntax[] callArguments)
         {
-            var arrow = ArrowExpressionClause(GetMemberAccessCall(target, call, callArguments));
+            var arrow = ArrowExpressionClause(GetMemberAccessCall(subject, call, callArguments));
             return declarationSyntax.WithExpressionBody(arrow);
         }
 
         public static PropertyDeclarationSyntax Returning(this PropertyDeclarationSyntax declarationSyntax,
-            string target,
+            string subject,
             SimpleNameSyntax call, params ExpressionSyntax[] callArguments)
         {
-            var arrow = ArrowExpressionClause(GetMemberAccessCall(target, call, callArguments));
+            var arrow = ArrowExpressionClause(GetMemberAccessCall(subject, call, callArguments));
             return declarationSyntax.WithExpressionBody(arrow);
         }
 
@@ -59,6 +59,28 @@ namespace CsvLinqPadDriver
                     IdentifierName(target),
                     call))
                 .AddArgumentListArguments(callArguments.Select(Argument).ToArray());
+        }
+        
+        public static ParameterSyntax ThisParameter(TypeSyntax type, string name)
+        {
+            return SyntaxFactory.Parameter(Identifier(name))
+                .WithModifiers(TokenList(Token(SyntaxKind.ThisKeyword)))
+                .WithType(type);
+        }
+
+        public static TypeSyntax EnumerableType(string typeName)
+        {
+            return Type("IEnumerable", typeName);
+        }
+
+        public static GenericNameSyntax Type(string name, string typeName)
+        {
+            return GenericName(name).AddTypeArgumentListArguments(IdentifierName(typeName));
+        }
+
+        public static ParameterSyntax Parameter(string type, string name)
+        {
+            return SyntaxFactory.Parameter(Identifier(name)).WithType(IdentifierName(type));
         }
     }
 }

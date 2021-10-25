@@ -8,9 +8,9 @@ namespace CsvLinqPadDriver
 {
 	internal static class AssemblyHelper
 	{
-		public static readonly string CsvReaderAssemblyLocation = typeof(CsvParser.CsvReader).Assembly.Location;
-		
-		public static readonly string ExtensionsAssemblyLocation = typeof(DynamicExtensions).Assembly.Location;
+		private static readonly string CsvReaderAssemblyLocation = typeof(CsvParser.CsvReader).Assembly.Location;
+
+		private static readonly string ExtensionsAssemblyLocation = typeof(DynamicExtensions).Assembly.Location;
 
 		public static void LoadAssemblies()
 		{
