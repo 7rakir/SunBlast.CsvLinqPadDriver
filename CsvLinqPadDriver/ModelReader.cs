@@ -2,18 +2,17 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace CsvLinqPadDriver
 {
 	internal static class ModelReader
 	{
-		public static async IAsyncEnumerable<FileModel> GetSchemaModelAsync(string path)
+		public static IEnumerable<FileModel> GetSchemaModel(string path)
 		{
 			var files = GetFiles(path);
 			foreach (var file in files)
 			{
-				var model = await GetModelAsync(file);
+				var model = GetModel(file);
 				if (model != null)
 				{
 					yield return model;
@@ -21,20 +20,20 @@ namespace CsvLinqPadDriver
 			}
 		}
 
-		private static async Task<FileModel?> GetModelAsync(FileDescription file)
+		private static FileModel? GetModel(FileDescription file)
 		{
-			var data = await GetDataAsync(file.FullPath);
+			var data = GetData(file.FullPath);
 
 			return data is null ? null : new FileModel(file, data);
 		}
 
-		private static async Task<DataDescription?> GetDataAsync(string filePath)
+		private static DataDescription? GetData(string filePath)
 		{
-			await using var stream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+			using var stream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
 			using var reader = new StreamReader(stream);
 			
-			var headerLine = await reader.ReadLineAsync();
+			var headerLine = reader.ReadLine();
 
 			if (string.IsNullOrWhiteSpace(headerLine))
 			{
@@ -43,7 +42,7 @@ namespace CsvLinqPadDriver
 			
 			var headers = headerLine.Split(',', StringSplitOptions.RemoveEmptyEntries);
 			
-			var dataLine = await reader.ReadLineAsync();
+			var dataLine = reader.ReadLine();
 
 			var hasData = !string.IsNullOrWhiteSpace(dataLine);
 

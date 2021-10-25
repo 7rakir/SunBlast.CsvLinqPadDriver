@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace CsvLinqPadDriver
@@ -49,22 +48,17 @@ namespace CsvLinqPadDriver
 
 			var syntaxTreeBuilder = new SyntaxTreeBuilder(typeName);
 			var schemaBuilder = new SchemaBuilder();
-
-			ApplyModelAsync(path, syntaxTreeBuilder, schemaBuilder).Wait();
+			
+			foreach (var fileModel in ModelReader.GetSchemaModel(path))
+			{
+				syntaxTreeBuilder.AddModel(fileModel);
+				schemaBuilder.AddModel(fileModel);
+			}
 
 			var tree = syntaxTreeBuilder.Build(nameSpace);
 			CodeEmitter.Emit(tree, assemblyToBuild);
 
 			return schemaBuilder.BuildSchema().ToList();
-		}
-
-		private static async Task ApplyModelAsync(string path, SyntaxTreeBuilder syntaxTreeBuilder, SchemaBuilder schemaBuilder)
-		{
-			await foreach (var fileModel in ModelReader.GetSchemaModelAsync(path))
-			{
-				syntaxTreeBuilder.AddModel(fileModel);
-				schemaBuilder.AddModel(fileModel);
-			}
 		}
 
 		public static void WriteToLog(string message) => WriteToLog(message, "SunBlast.CsvLinqPadDriver.log");
