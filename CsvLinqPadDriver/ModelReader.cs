@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using CsvHelper;
 
 namespace CsvLinqPadDriver
 {
@@ -12,41 +14,30 @@ namespace CsvLinqPadDriver
 			var files = GetFiles(path);
 			foreach (var file in files)
 			{
-				var model = GetModel(file);
-				if (model != null)
+				var data = GetData(file.FullPath);
+				if (data != null)
 				{
-					yield return model;
+					yield return new FileModel(file, data);
 				}
 			}
 		}
 
-		private static FileModel? GetModel(FileDescription file)
-		{
-			var data = GetData(file.FullPath);
-
-			return data is null ? null : new FileModel(file, data);
-		}
-
 		private static DataDescription? GetData(string filePath)
 		{
-			using var stream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+			using var reader = new StreamReader(filePath);
 
-			using var reader = new StreamReader(stream);
-			
-			var headerLine = reader.ReadLine();
+			using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
 
-			if (string.IsNullOrWhiteSpace(headerLine))
+			var hasHeader = csv.Read();
+			if (!hasHeader)
 			{
 				return null;
 			}
 			
-			var headers = headerLine.Split(',', StringSplitOptions.RemoveEmptyEntries);
-			
-			var dataLine = reader.ReadLine();
+			csv.ReadHeader();
+			var hasData = csv.Read();
 
-			var hasData = !string.IsNullOrWhiteSpace(dataLine);
-
-			return new DataDescription(headers, hasData);
+			return new DataDescription(csv.HeaderRecord, hasData);
 		}
 
 		private static IEnumerable<FileDescription> GetFiles(string path)
