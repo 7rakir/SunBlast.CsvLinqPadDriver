@@ -1,7 +1,7 @@
-using CsvParser;
 using NUnit.Framework;
 using System;
 using System.IO;
+using CsvLinqPadDriver.Csv;
 
 namespace CsvLinqPadDriver.Tests
 {

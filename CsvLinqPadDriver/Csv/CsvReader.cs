@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using CsvHelper.Configuration;
 
-namespace CsvParser
+namespace CsvLinqPadDriver.Csv
 {
 	public static class CsvReader
 	{

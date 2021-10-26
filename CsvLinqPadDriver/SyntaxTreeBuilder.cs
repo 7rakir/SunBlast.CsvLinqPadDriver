@@ -57,8 +57,8 @@ namespace CsvLinqPadDriver
                 "System.Collections.Generic",
                 "System.IO",
                 "System.Linq",
-                "CsvLinqPadDriver.Extensions.Dynamic",
-                "CsvParser",
+                "CsvLinqPadDriver.Csv",
+                "CsvLinqPadDriver.Extensions.Dynamic"
             }.Select(name => UsingDirective(ParseName(name)));
         }
 

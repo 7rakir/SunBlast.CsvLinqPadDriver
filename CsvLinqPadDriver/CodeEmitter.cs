@@ -18,17 +18,19 @@ namespace CsvLinqPadDriver
 
 			var result = compilation.Emit(fileStream);
 
-			if (!result.Success)
+			if (result.Success)
 			{
-				LogError(result);
+				return;
 			}
+			
+			LogError(result);
+			throw new InvalidOperationException(@"Emitting compilation failed. See '%localappdata%\LINQPad\Logs.LINQPad6\SunBlast.CsvLinqPadDriver.log' for more information.");
 		}
 
 		private static Compilation GetCompilation(AssemblyName assembly, SyntaxTree syntaxTree)
 		{
 			var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
-
-			AssemblyHelper.LoadAssemblies();
+			
 			var references = AssemblyHelper.GetReferences();
 
 			return CSharpCompilation
