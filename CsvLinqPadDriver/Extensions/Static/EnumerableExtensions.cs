@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace CsvLinqPadDriver.Extensions
+namespace CsvLinqPadDriver.Extensions.Static
 {
     public static class EnumerableExtensions
     {

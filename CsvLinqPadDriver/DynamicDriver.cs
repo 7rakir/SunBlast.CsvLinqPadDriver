@@ -10,6 +10,7 @@ namespace CsvLinqPadDriver
 {
 	internal class DynamicDriver : DynamicDataContextDriver
 	{
+#if DEBUG
 		static DynamicDriver()
 		{
 			AppDomain.CurrentDomain.FirstChanceException += (sender, args) =>
@@ -18,6 +19,7 @@ namespace CsvLinqPadDriver
 					Debugger.Launch();
 			};
 		}
+#endif
 
 		public override string Name => "CSV to LINQ driver";
 
@@ -63,6 +65,6 @@ namespace CsvLinqPadDriver
 
 		public static void WriteToLog(string message) => WriteToLog(message, "SunBlast.CsvLinqPadDriver.log");
 
-		public override IEnumerable<string> GetNamespacesToAdd(IConnectionInfo cxInfo) => new[] { "CsvLinqPadDriver.Extensions" };
+		public override IEnumerable<string> GetNamespacesToAdd(IConnectionInfo cxInfo) => new[] { "CsvLinqPadDriver.Extensions.Static" };
 	}
 }

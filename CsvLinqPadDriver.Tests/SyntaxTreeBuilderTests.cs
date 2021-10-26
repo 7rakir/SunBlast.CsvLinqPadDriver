@@ -27,7 +27,7 @@ namespace CsvLinqPadDriver.Tests
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using CsvLinqPadDriver.DataExtensions;
+using CsvLinqPadDriver.Extensions.Dynamic;
 using CsvParser;
 
 namespace TestNamespace
@@ -71,7 +71,7 @@ namespace TestNamespace
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using CsvLinqPadDriver.DataExtensions;
+using CsvLinqPadDriver.Extensions.Dynamic;
 using CsvParser;
 
 namespace TestNamespace

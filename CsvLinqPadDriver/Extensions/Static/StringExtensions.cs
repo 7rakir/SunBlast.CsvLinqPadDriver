@@ -1,6 +1,6 @@
 using System;
 
-namespace CsvLinqPadDriver.Extensions
+namespace CsvLinqPadDriver.Extensions.Static
 {
     public static class StringExtensions
     {

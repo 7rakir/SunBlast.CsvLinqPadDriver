@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace CsvLinqPadDriver.DataExtensions
+namespace CsvLinqPadDriver.Extensions.Dynamic
 {
     public static class DynamicExtensions
     {

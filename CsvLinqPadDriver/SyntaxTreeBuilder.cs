@@ -57,7 +57,7 @@ namespace CsvLinqPadDriver
                 "System.Collections.Generic",
                 "System.IO",
                 "System.Linq",
-                "CsvLinqPadDriver.DataExtensions",
+                "CsvLinqPadDriver.Extensions.Dynamic",
                 "CsvParser",
             }.Select(name => UsingDirective(ParseName(name)));
         }
@@ -99,7 +99,7 @@ namespace CsvLinqPadDriver
 
         /// <summary>
         /// Represents dynamically generated extensions.
-        /// E.g. if the schema model contains 'Nodes', node-related extensions are generated that in turn call 'dynamic' extensions from DataExtensions
+        /// E.g. if the schema model contains 'Nodes', node-related extensions are generated that in turn call 'dynamic' extensions from Extensions.Dynamic
         /// </summary>
         private static class DataClassExtensionsGenerator
         {
