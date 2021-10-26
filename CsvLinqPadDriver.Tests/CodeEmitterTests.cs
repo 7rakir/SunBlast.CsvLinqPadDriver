@@ -1,5 +1,4 @@
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using NUnit.Framework;
 using System;
@@ -20,19 +19,11 @@ namespace CsvLinqPadDriver.Tests
 
 			var assembly = new AssemblyName("AssemblyName");
 
-			var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
-
-			var references = AssemblyHelper.GetReferences();
-
 			EmitResult? result;
 
 			using (DurationAssert.StartNew(2000))
 			{
-				var compilation = CSharpCompilation
-					.Create(assembly.FullName)
-					.AddSyntaxTrees(syntaxTree)
-					.AddReferences(references)
-					.WithOptions(options);
+				var compilation = CodeEmitter.GetCompilation(assembly, syntaxTree);
 
 				using var stream = new MemoryStream();
 
