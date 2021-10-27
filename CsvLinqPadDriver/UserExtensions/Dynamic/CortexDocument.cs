@@ -45,7 +45,7 @@ namespace CsvLinqPadDriver.UserExtensions.Dynamic
             ModelType,
             IsObject,
             Relation = IsObject ? null : new Lazy<Relationship>(() => Relation!),
-            Properties = IsObject ? new Lazy<JsonElement?>(() => Properties) : null
+            Properties = IsObject ? new Lazy<string?>(() => Properties.ToString()) : null
         };
 
         public class Relationship
