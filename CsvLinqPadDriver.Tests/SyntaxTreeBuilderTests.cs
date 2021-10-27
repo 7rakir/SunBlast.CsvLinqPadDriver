@@ -28,7 +28,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CsvLinqPadDriver.Csv;
-using CsvLinqPadDriver.Extensions.Dynamic;
+using CsvLinqPadDriver.UserExtensions.Dynamic;
 
 namespace TestNamespace
 {
@@ -72,7 +72,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CsvLinqPadDriver.Csv;
-using CsvLinqPadDriver.Extensions.Dynamic;
+using CsvLinqPadDriver.UserExtensions.Dynamic;
 
 namespace TestNamespace
 {

@@ -65,6 +65,6 @@ namespace CsvLinqPadDriver
 
 		public static void WriteToLog(string message) => WriteToLog(message, "SunBlast.CsvLinqPadDriver.log");
 
-		public override IEnumerable<string> GetNamespacesToAdd(IConnectionInfo cxInfo) => new[] { "CsvLinqPadDriver.Extensions.Static" };
 	}
+        public override IEnumerable<string> GetNamespacesToAdd(IConnectionInfo cxInfo) => new[] { "CsvLinqPadDriver.UserExtensions.Static" };
 }
