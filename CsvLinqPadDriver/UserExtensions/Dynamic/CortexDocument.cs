@@ -1,7 +1,7 @@
 using System;
 using System.Text.Json;
 
-namespace CsvLinqPadDriver.Extensions.Dynamic
+namespace CsvLinqPadDriver.UserExtensions.Dynamic
 {
     public class CortexDocument
     {
