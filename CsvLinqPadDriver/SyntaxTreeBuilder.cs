@@ -103,21 +103,27 @@ namespace CsvLinqPadDriver
         /// </summary>
         private static class DataClassExtensionsGenerator
         {
+            private static readonly Dictionary<string, MemberDeclarationSyntax> conditionalExtensionMethods = new()
+            {
+                { "Nodes", NodesDelayedExtension },
+                { "Cortex_Documents", CortexParsingExtension },
+            };
+
             public static ClassDeclarationSyntax CreateClass(IReadOnlySet<string> dataClassNames)
             {
-                var members = new List<MemberDeclarationSyntax>();
+                var extensions = GetExtensions(dataClassNames).ToArray();
+                return ClassDeclaration("ModelExtensions").AsPublicStatic().AddMembers(extensions);
+            }
 
-                if (dataClassNames.Contains("Nodes"))
+            private static IEnumerable<MemberDeclarationSyntax> GetExtensions(IReadOnlySet<string> dataClassNames)
+            {
+                foreach (var (identifier, extension) in conditionalExtensionMethods)
                 {
-                    members.Add(NodesDelayedExtension);
+                    if (dataClassNames.Contains(identifier))
+                    {
+                        yield return extension;
+                    }
                 }
-
-                if (dataClassNames.Contains("Cortex_Documents"))
-                {
-                    members.Add(CortexParsingExtension);
-                }
-
-                return ClassDeclaration("ModelExtensions").AsPublicStatic().AddMembers(members.ToArray());
             }
 
             private static MemberDeclarationSyntax NodesDelayedExtension =>
