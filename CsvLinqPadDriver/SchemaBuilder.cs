@@ -22,7 +22,7 @@ namespace CsvLinqPadDriver
 			category.Add(fileModel.ClassName, fileModel);
 		}
 		
-		public IEnumerable<ExplorerItem> BuildSchema()
+		public IEnumerable<ExplorerItem> Build()
 		{
 			foreach (var (prefix, category) in schema)
 			{

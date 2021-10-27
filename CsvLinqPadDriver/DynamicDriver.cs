@@ -60,10 +60,10 @@ namespace CsvLinqPadDriver
 			var tree = syntaxTreeBuilder.Build(nameSpace);
 			CodeEmitter.Emit(tree, assemblyToBuild);
 
-			return schemaBuilder.BuildSchema().ToList();
 		}
 
 		public static void WriteToLog(string message) => WriteToLog(message, "SunBlast.CsvLinqPadDriver.log");
+            return schemaBuilder.Build().ToList();
 
 	}
         public override IEnumerable<string> GetNamespacesToAdd(IConnectionInfo cxInfo) => new[] { "CsvLinqPadDriver.UserExtensions.Static" };

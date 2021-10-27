@@ -42,7 +42,7 @@ namespace CsvLinqPadDriver.Tests
                 builder.AddModel(fileModel);
             }
 
-            return builder.BuildSchema();
+            return builder.Build();
         }
     }
 }
