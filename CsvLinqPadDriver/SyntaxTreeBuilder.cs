@@ -99,16 +99,10 @@ namespace CsvLinqPadDriver
 
         /// <summary>
         /// Represents dynamically generated extensions.
-        /// E.g. if the schema model contains 'Nodes', node-related extensions are generated that in turn call 'dynamic' extensions from Extensions.Dynamic
+        /// E.g. if the schema model contains 'Nodes', node-related extensions are generated that in turn call 'dynamic' extensions from UserExtensions.Dynamic
         /// </summary>
         private static class DataClassExtensionsGenerator
         {
-            private static readonly Dictionary<string, MemberDeclarationSyntax> conditionalExtensionMethods = new()
-            {
-                { "Nodes", NodesDelayedExtension },
-                { "Cortex_Documents", CortexParsingExtension },
-            };
-
             public static ClassDeclarationSyntax CreateClass(IReadOnlySet<string> dataClassNames)
             {
                 var extensions = GetExtensions(dataClassNames).ToArray();
@@ -117,6 +111,12 @@ namespace CsvLinqPadDriver
 
             private static IEnumerable<MemberDeclarationSyntax> GetExtensions(IReadOnlySet<string> dataClassNames)
             {
+                var conditionalExtensionMethods = new Dictionary<string, MemberDeclarationSyntax>()
+                {
+                    { "Nodes", NodesDelayedExtension },
+                    { "Cortex_Documents", CortexParsingExtension },
+                };
+                
                 foreach (var (identifier, extension) in conditionalExtensionMethods)
                 {
                     if (dataClassNames.Contains(identifier))
