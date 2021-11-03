@@ -26,14 +26,14 @@ namespace CsvLinqPadDriver
 		{
 			foreach (var (prefix, category) in schema)
 			{
-				int categoryCount = category.Values.Count;
-				if (categoryCount == 1)
+				int itemCount = category.Values.Count;
+				if (itemCount == 1)
 				{
 					yield return GetModelExplorerItem(category.Values.Single());
 				}
 				else
 				{
-					yield return GetCategoryExplorerItem($"{prefix} ({categoryCount})", category.Values);
+					yield return GetCategoryExplorerItem($"{prefix} ({itemCount})", category.Values);
 				}
 			}
 		}

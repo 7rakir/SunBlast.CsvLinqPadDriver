@@ -107,7 +107,7 @@ namespace CsvLinqPadDriver
             public static ClassDeclarationSyntax CreateClass(IReadOnlySet<string> dataClassNames)
             {
                 var extensions = GetExtensions(dataClassNames).ToArray();
-                return ClassDeclaration("ModelExtensions").AsPublicStatic().AddMembers(extensions);
+                return ClassDeclaration("DataExtensions").AsPublicStatic().AddMembers(extensions);
             }
 
             private static IEnumerable<MemberDeclarationSyntax> GetExtensions(IReadOnlySet<string> dataClassNames)
