@@ -12,7 +12,7 @@ namespace CsvLinqPadDriver.Tests
 		{
 			var file = new FileDescription("Model.extension", 0, DateTime.MinValue);
 
-			var data = new DataDescription(new[] { "Header1", "Header-2" }, true);
+			var data = new DataDescription(new[] { "Header1", "Header-2", "" }, true);
 
 			var schema = new[]
 			{
@@ -34,12 +34,14 @@ namespace TestNamespace
 {
     public class TestContextClass
     {
-        public IEnumerable<Model> Model => CsvReader.ReadFile<Model>(""Model.extension"")}
+        public IEnumerable<Model> Model => CsvReader.ReadFile<Model>(""Model.extension"");
+    }
 
     public class Model
     {
         public string Header1;
-        public string Header-2;
+        public string Header_2;
+        public string;
     }
 
     public static class ModelExtensions
@@ -78,7 +80,9 @@ namespace TestNamespace
 {
     public class TestContextClass
     {
-        public IEnumerable<Cortex_Documents> Cortex_Documents => CsvReader.ReadFile<Cortex_Documents>(""Cortex_Documents.extension"")public IEnumerable<Nodes> Nodes => CsvReader.ReadFile<Nodes>(""Nodes.extension"")}
+        public IEnumerable<Cortex_Documents> Cortex_Documents => CsvReader.ReadFile<Cortex_Documents>(""Cortex_Documents.extension"");
+        public IEnumerable<Nodes> Nodes => CsvReader.ReadFile<Nodes>(""Nodes.extension"");
+    }
 
     public class Cortex_Documents
     {
@@ -90,7 +94,9 @@ namespace TestNamespace
 
     public static class ModelExtensions
     {
-        public static IEnumerable<Nodes> WhereDelayed(this IEnumerable<Nodes> enumerable, DateTime timeOfGatheringDiagnostics) => enumerable.WhereDelayed<Nodes>(timeOfGatheringDiagnostics)public static IEnumerable<CortexDocument> Parse(this IEnumerable<Cortex_Documents> enumerable) => enumerable.ParseCortex()}
+        public static IEnumerable<Nodes> WhereDelayed(this IEnumerable<Nodes> enumerable, DateTime timeOfGatheringDiagnostics) => enumerable.WhereDelayed<Nodes>(timeOfGatheringDiagnostics);
+        public static IEnumerable<CortexDocument> Parse(this IEnumerable<Cortex_Documents> enumerable) => enumerable.ParseCortex();
+    }
 }";
 
 			Assert.AreEqual(expectedOutput, result);

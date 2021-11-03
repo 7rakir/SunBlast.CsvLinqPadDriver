@@ -71,7 +71,8 @@ namespace CsvLinqPadDriver
                     .Returning(
                         "CsvReader",
                         Type("ReadFile", model.ClassName),
-                        CreateStringLiteral(model.FilePath));
+                        CreateStringLiteral(model.FilePath))
+                    .WithSemicolonToken(Token(SyntaxKind.SemicolonToken));
             }
         }
 
@@ -129,6 +130,7 @@ namespace CsvLinqPadDriver
             private static MemberDeclarationSyntax NodesDelayedExtension =>
                 MethodDeclaration(EnumerableType("Nodes"), "WhereDelayed")
                     .AsPublicStatic()
+                    .WithSemicolonToken(Token(SyntaxKind.SemicolonToken))
                     .AddParameterListParameters(
                         ThisParameter(EnumerableType("Nodes"), "enumerable"),
                         Parameter("DateTime", "timeOfGatheringDiagnostics"))
@@ -140,6 +142,7 @@ namespace CsvLinqPadDriver
             private static MemberDeclarationSyntax CortexParsingExtension =>
                 MethodDeclaration(EnumerableType("CortexDocument"), "Parse")
                     .AsPublicStatic()
+                    .WithSemicolonToken(Token(SyntaxKind.SemicolonToken))
                     .AddParameterListParameters(ThisParameter(EnumerableType("Cortex_Documents"), "enumerable"))
                     .Returning("enumerable", IdentifierName("ParseCortex"));
         }
