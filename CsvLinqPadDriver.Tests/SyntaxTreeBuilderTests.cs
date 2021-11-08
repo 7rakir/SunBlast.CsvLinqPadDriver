@@ -34,7 +34,7 @@ namespace TestNamespace
 {
     public class TestContextClass
     {
-        public IEnumerable<Model> Model => CsvReader.ReadFile<Model>(""Model.extension"");
+        public IEnumerable<Model> Model => CsvReader.ReadFile<Model>(@""Model.extension"");
     }
 
     public class Model
@@ -80,8 +80,8 @@ namespace TestNamespace
 {
     public class TestContextClass
     {
-        public IEnumerable<Cortex_Documents> Cortex_Documents => CsvReader.ReadFile<Cortex_Documents>(""Cortex_Documents.extension"");
-        public IEnumerable<Nodes> Nodes => CsvReader.ReadFile<Nodes>(""Nodes.extension"");
+        public IEnumerable<Cortex_Documents> Cortex_Documents => CsvReader.ReadFile<Cortex_Documents>(@""Cortex_Documents.extension"");
+        public IEnumerable<Nodes> Nodes => CsvReader.ReadFile<Nodes>(@""Nodes.extension"");
     }
 
     public class Cortex_Documents

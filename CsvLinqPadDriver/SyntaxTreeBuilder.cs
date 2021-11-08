@@ -1,11 +1,8 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
-using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Linq;
-using static CsvLinqPadDriver.RoslynExtensions;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace CsvLinqPadDriver
@@ -14,13 +11,13 @@ namespace CsvLinqPadDriver
     {
         private ClassDeclarationSyntax contextClass;
 
-        private readonly List<MemberDeclarationSyntax> dataClasses = new();
+        private readonly List<ClassDeclarationSyntax> dataClasses = new();
 
         private readonly HashSet<string> dataClassNames = new();
 
         public SyntaxTreeBuilder(string className)
         {
-            contextClass = ClassDeclaration(className).AsPublic();
+            contextClass = ClassDeclaration(className).AddModifiers(Token(SyntaxKind.PublicKeyword));
         }
 
         public void AddModel(FileModel fileModel)
@@ -28,7 +25,7 @@ namespace CsvLinqPadDriver
             dataClasses.Add(DataClassGenerator.CreateClass(fileModel));
             dataClassNames.Add(fileModel.ClassName);
 
-            var property = ContextClassGenerator.CreateProperty(fileModel);
+            var property = ContextClassGenerator.CreateProperty(fileModel)!;
 
             contextClass = contextClass.AddMembers(property);
         }
@@ -64,15 +61,10 @@ namespace CsvLinqPadDriver
 
         private static class ContextClassGenerator
         {
-            public static MemberDeclarationSyntax CreateProperty(FileModel model)
+            public static MemberDeclarationSyntax? CreateProperty(FileModel model)
             {
-                return PropertyDeclaration(EnumerableType(model.ClassName), model.ClassName)
-                    .AsPublic()
-                    .Returning(
-                        "CsvReader",
-                        Type("ReadFile", model.ClassName),
-                        CreateStringLiteral(model.FilePath))
-                    .WithSemicolonToken(Token(SyntaxKind.SemicolonToken));
+                return ParseMemberDeclaration(
+                    $@"public IEnumerable<{model.ClassName}> {model.ClassName} => CsvReader.ReadFile<{model.ClassName}>(@""{model.FilePath}"");");
             }
         }
 
@@ -80,17 +72,12 @@ namespace CsvLinqPadDriver
         {
             public static ClassDeclarationSyntax CreateClass(FileModel model)
             {
-                if (!CodeGenerator.IsValidLanguageIndependentIdentifier(model.ClassName))
-                {
-                    throw new ArgumentException($"Invalid name '{model.ClassName}'", model.ClassName);
-                }
+                var properties = model.Headers.Select(CreateField).ToArray();
 
-                var properties = model.Headers.Select(CreateProperty).ToArray();
-
-                return ClassDeclaration(model.ClassName).AsPublic().AddMembers(properties);
+                return ClassDeclaration(model.ClassName).AddModifiers(Token(SyntaxKind.PublicKeyword)).AddMembers(properties);
             }
 
-            private static MemberDeclarationSyntax CreateProperty(string propertyName)
+            private static MemberDeclarationSyntax CreateField(string propertyName)
             {
                 return FieldDeclaration(VariableDeclaration(PredefinedType(Token(SyntaxKind.StringKeyword)))
                         .AddVariables(VariableDeclarator(propertyName)))
@@ -107,15 +94,17 @@ namespace CsvLinqPadDriver
             public static ClassDeclarationSyntax CreateClass(IReadOnlySet<string> dataClassNames)
             {
                 var extensions = GetExtensions(dataClassNames).ToArray();
-                return ClassDeclaration("DataExtensions").AsPublicStatic().AddMembers(extensions);
+                return ClassDeclaration("DataExtensions")
+                    .AddModifiers(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword))
+                    .AddMembers(extensions);
             }
 
             private static IEnumerable<MemberDeclarationSyntax> GetExtensions(IReadOnlySet<string> dataClassNames)
             {
                 var conditionalExtensionMethods = new Dictionary<string, MemberDeclarationSyntax>()
                 {
-                    { "Nodes", NodesDelayedExtension },
-                    { "Cortex_Documents", CortexParsingExtension },
+                    { "Nodes", NodesDelayedExtension! },
+                    { "Cortex_Documents", CortexParsingExtension! },
                 };
                 
                 foreach (var (identifier, extension) in conditionalExtensionMethods)
@@ -127,24 +116,13 @@ namespace CsvLinqPadDriver
                 }
             }
 
-            private static MemberDeclarationSyntax NodesDelayedExtension =>
-                MethodDeclaration(EnumerableType("Nodes"), "WhereDelayed")
-                    .AsPublicStatic()
-                    .WithSemicolonToken(Token(SyntaxKind.SemicolonToken))
-                    .AddParameterListParameters(
-                        ThisParameter(EnumerableType("Nodes"), "enumerable"),
-                        Parameter("DateTime", "timeOfGatheringDiagnostics"))
-                    .Returning(
-                        "enumerable",
-                        Type("WhereDelayed", "Nodes"),
-                        IdentifierName("timeOfGatheringDiagnostics"));
+            private static MemberDeclarationSyntax? NodesDelayedExtension =>
+                ParseMemberDeclaration(
+                    "public static IEnumerable<Nodes> WhereDelayed(this IEnumerable<Nodes> enumerable, DateTime timeOfGatheringDiagnostics) => enumerable.WhereDelayed<Nodes>(timeOfGatheringDiagnostics);");
 
-            private static MemberDeclarationSyntax CortexParsingExtension =>
-                MethodDeclaration(EnumerableType("CortexDocument"), "Parse")
-                    .AsPublicStatic()
-                    .WithSemicolonToken(Token(SyntaxKind.SemicolonToken))
-                    .AddParameterListParameters(ThisParameter(EnumerableType("Cortex_Documents"), "enumerable"))
-                    .Returning("enumerable", IdentifierName("ParseCortex"));
+            private static MemberDeclarationSyntax? CortexParsingExtension =>
+                ParseMemberDeclaration(
+                    "public static IEnumerable<CortexDocument> Parse(this IEnumerable<Cortex_Documents> enumerable) => enumerable.ParseCortex();");
         }
     }
 }
