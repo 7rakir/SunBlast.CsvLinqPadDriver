@@ -9,32 +9,25 @@ namespace CsvLinqPadDriver
 {
     internal class SyntaxTreeBuilder
     {
-        private ClassDeclarationSyntax contextClass;
-
-        private readonly List<ClassDeclarationSyntax> dataClasses = new();
-
-        private readonly HashSet<string> dataClassNames = new();
+        private readonly ContextClass contextClass;
+        private readonly DataClasses dataClasses = new();
+        private readonly ExtensionClass extensionClass = new();
 
         public SyntaxTreeBuilder(string className)
         {
-            contextClass = ClassDeclaration(className).AddModifiers(Token(SyntaxKind.PublicKeyword));
+            contextClass = new ContextClass(className);
         }
 
         public void AddModel(FileModel fileModel)
         {
-            dataClasses.Add(DataClassGenerator.CreateClass(fileModel));
-            dataClassNames.Add(fileModel.ClassName);
-
-            var property = ContextClassGenerator.CreateProperty(fileModel)!;
-
-            contextClass = contextClass.AddMembers(property);
+            contextClass.AddProperty(fileModel);
+            dataClasses.AddClass(fileModel);
+            extensionClass.EnsureExtension(fileModel);
         }
 
         public SyntaxTree Build(string nameSpace)
         {
-            var extensionClass = DataClassExtensionsGenerator.CreateClass(dataClassNames);
-
-            var members = dataClasses.Prepend(contextClass).Append(extensionClass).ToArray();
+            var members = dataClasses.Declarations.Prepend(contextClass.Declaration).Append(extensionClass.Declaration).ToArray();
 
             var namespaceDeclaration = NamespaceDeclaration(ParseName(nameSpace)).AddMembers(members);
 
@@ -59,22 +52,37 @@ namespace CsvLinqPadDriver
             }.Select(name => UsingDirective(ParseName(name)));
         }
 
-        private static class ContextClassGenerator
+        private class ContextClass
         {
-            public static MemberDeclarationSyntax? CreateProperty(FileModel model)
+            public ClassDeclarationSyntax Declaration { get; private set; }
+            
+            public ContextClass(string name)
             {
-                return ParseMemberDeclaration(
+                Declaration = ClassDeclaration(name).AddModifiers(Token(SyntaxKind.PublicKeyword));
+            }
+            
+            public void AddProperty(FileModel model)
+            {
+                var property = ParseMemberDeclaration(
                     $@"public IEnumerable<{model.ClassName}> {model.ClassName} => CsvReader.ReadFile<{model.ClassName}>(@""{model.FilePath}"");");
+
+                Declaration = Declaration.AddMembers(property!);
             }
         }
 
-        private static class DataClassGenerator
+        private class DataClasses
         {
-            public static ClassDeclarationSyntax CreateClass(FileModel model)
+            private readonly List<ClassDeclarationSyntax> declarations = new();
+
+            public IEnumerable<ClassDeclarationSyntax> Declarations => declarations.AsReadOnly();
+
+            public void AddClass(FileModel model)
             {
                 var properties = model.Headers.Select(CreateField).ToArray();
 
-                return ClassDeclaration(model.ClassName).AddModifiers(Token(SyntaxKind.PublicKeyword)).AddMembers(properties);
+                var dataClass = ClassDeclaration(model.ClassName).AddModifiers(Token(SyntaxKind.PublicKeyword)).AddMembers(properties);
+                
+                declarations.Add(dataClass);
             }
 
             private static MemberDeclarationSyntax CreateField(string propertyName)
@@ -89,30 +97,27 @@ namespace CsvLinqPadDriver
         /// Represents dynamically generated extensions.
         /// E.g. if the schema model contains 'Nodes', node-related extensions are generated that in turn call 'dynamic' extensions from UserExtensions.Dynamic
         /// </summary>
-        private static class DataClassExtensionsGenerator
+        private class ExtensionClass
         {
-            public static ClassDeclarationSyntax CreateClass(IReadOnlySet<string> dataClassNames)
+            public ClassDeclarationSyntax Declaration { get; private set; }
+            
+            private static readonly Dictionary<string, MemberDeclarationSyntax> ConditionalExtensionMethods = new()
             {
-                var extensions = GetExtensions(dataClassNames).ToArray();
-                return ClassDeclaration("DataExtensions")
-                    .AddModifiers(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword))
-                    .AddMembers(extensions);
+                { "Nodes", NodesDelayedExtension! },
+                { "Cortex_Documents", CortexParsingExtension! },
+            };
+            
+            public ExtensionClass()
+            {
+                Declaration = ClassDeclaration("DataExtensions")
+                    .AddModifiers(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.StaticKeyword));
             }
 
-            private static IEnumerable<MemberDeclarationSyntax> GetExtensions(IReadOnlySet<string> dataClassNames)
+            public void EnsureExtension(FileModel fileModel)
             {
-                var conditionalExtensionMethods = new Dictionary<string, MemberDeclarationSyntax>()
+                if(ConditionalExtensionMethods.TryGetValue(fileModel.ClassName, out var extension))
                 {
-                    { "Nodes", NodesDelayedExtension! },
-                    { "Cortex_Documents", CortexParsingExtension! },
-                };
-                
-                foreach (var (identifier, extension) in conditionalExtensionMethods)
-                {
-                    if (dataClassNames.Contains(identifier))
-                    {
-                        yield return extension;
-                    }
+                    Declaration = Declaration.AddMembers(extension);
                 }
             }
 
