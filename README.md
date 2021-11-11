@@ -45,7 +45,7 @@ called as mentioned in the LINQPad driver documentation:
 3. When built, returns `SyntaxTree` containing:
    * One DataContext class with many `IEnumerable` properties, one for each Data class
    * Many Data classes
-   * One ModelExtensions class containing quality-of-life extensions for querying specific Data classes,
+   * One DataExtensions class containing quality-of-life extensions for querying specific Data classes,
 if they are available
 
 #### `SchemaBuilder` – How does LINQPad schema building work?
