@@ -15,7 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CsvParser\CsvParser.csproj" />
     <ProjectReference Include="..\CsvLinqPadDriver\CsvLinqPadDriver.csproj" />
   </ItemGroup>
 
