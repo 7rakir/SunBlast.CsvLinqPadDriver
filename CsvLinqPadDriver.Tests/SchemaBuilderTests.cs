@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using System;
 using System.Linq;
+using CsvLinqPadDriver.Tests.Utils;
 
 namespace CsvLinqPadDriver.Tests
 {

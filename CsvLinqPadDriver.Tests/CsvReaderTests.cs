@@ -1,7 +1,7 @@
 using NUnit.Framework;
 using System;
-using System.IO;
 using CsvLinqPadDriver.Csv;
+using CsvLinqPadDriver.Tests.Utils;
 
 namespace CsvLinqPadDriver.Tests
 {
@@ -11,7 +11,7 @@ namespace CsvLinqPadDriver.Tests
 		[Test]
 		public void CsvWithDataSplitAcrossLines_ShouldBeProperlyParsed()
 		{
-			string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestData", $"{nameof(CsvReaderTests)}.csv");
+			string path = TestData.Path<CsvReaderTests>("Normal.csv");
 			var data = CsvReader.ReadFile<Data>(path);
 
 			var expected = new[]

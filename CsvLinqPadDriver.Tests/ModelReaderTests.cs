@@ -1,6 +1,6 @@
 using System;
-using System.IO;
 using System.Linq;
+using CsvLinqPadDriver.Tests.Utils;
 using NUnit.Framework;
 
 namespace CsvLinqPadDriver.Tests
@@ -10,7 +10,7 @@ namespace CsvLinqPadDriver.Tests
         [Test]
         public void ModelReader_ShouldProperlyGenerateSchema()
         {
-            string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestData", $"{nameof(ModelReader)}/");
+            string path = TestData.Path<ModelReaderTests>();
 
             var schemaModel = ModelReader.GetSchemaModel(path).ToArray();
 

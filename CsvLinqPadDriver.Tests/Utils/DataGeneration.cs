@@ -1,9 +1,9 @@
-using LINQPad.Extensibility.DataContext;
-using Microsoft.CodeAnalysis;
 using System;
 using System.Collections.Generic;
+using LINQPad.Extensibility.DataContext;
+using Microsoft.CodeAnalysis;
 
-namespace CsvLinqPadDriver.Tests
+namespace CsvLinqPadDriver.Tests.Utils
 {
     internal static class DataGeneration
     {
