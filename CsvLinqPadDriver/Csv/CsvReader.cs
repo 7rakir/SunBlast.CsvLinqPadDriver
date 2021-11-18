@@ -14,19 +14,11 @@ namespace CsvLinqPadDriver.Csv
 
         public static IEnumerable<T> ReadFile<T>(string path)
         {
-            var reader = new StreamReader(path);
-            var csv = new CsvHelper.CsvReader(reader, Configuration);
-            try
+            using var reader = new StreamReader(path);
+            using var csv = new CsvHelper.CsvReader(reader, Configuration);
+            foreach (var record in csv.GetRecords<T>())
             {
-                foreach (var record in csv.GetRecords<T>())
-                {
-                    yield return record;
-                }
-            }
-            finally
-            {
-                reader.Dispose();
-                csv.Dispose();
+                yield return record;
             }
         }
     }
