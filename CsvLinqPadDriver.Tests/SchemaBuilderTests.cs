@@ -45,5 +45,26 @@ namespace CsvLinqPadDriver.Tests
 			Assert.That(result[3].Text, Is.EqualTo("CCC"));
 			Assert.That(result[4].Text, Is.EqualTo("DDD"));
 		}
+		
+		[Test]
+		public void GenerateSchemaForModelWithCustomPrefix_SchemaShouldBeProperlySegmented()
+		{
+			var dataDescription = new DataDescription(new[] { "Header1" }, true);
+
+			var fileDescriptions = new[] {
+				new FileDescription("voipFirst", 1, DateTime.MinValue),
+				new FileDescription("netflowUncategorized", 3, DateTime.MinValue),
+				new FileDescription("VoIPSecond", 5, DateTime.MinValue),
+			};
+
+			var fileModels = fileDescriptions.Select(f => new FileModel(f, dataDescription));
+
+			var result = DataGeneration.GetSchema(fileModels).ToArray();
+
+			Assert.That(result[0].Text, Is.EqualTo("netflowUncategorized"));
+			Assert.That(result[1].Text, Is.EqualTo("voip (2)"));
+			Assert.That(result[1].Children[0].Text, Is.EqualTo("voipFirst"));
+			Assert.That(result[1].Children[1].Text, Is.EqualTo("VoIPSecond"));
+		}
 	}
 }

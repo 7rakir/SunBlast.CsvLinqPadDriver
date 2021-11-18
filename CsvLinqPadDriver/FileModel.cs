@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace CsvLinqPadDriver
@@ -8,6 +9,7 @@ namespace CsvLinqPadDriver
 	{
 		private const string InvalidCharactersRegex = @"[^\p{Ll}\p{Lu}\p{Lt}\p{Lo}\p{Nd}\p{Nl}\p{Mn}\p{Mc}\p{Cf}\p{Pc}\p{Lm}]";
 		private static readonly Regex Regex = new(InvalidCharactersRegex);
+		private static readonly string[] CustomPrefixes = { "alert", "cbqos", "netflow", "voip" };
 
 		public string? Prefix { get; }
 
@@ -50,24 +52,20 @@ namespace CsvLinqPadDriver
 
 		private static string? GetPrefix(string className)
 		{
-			var customPrefixes = new[] { "alert", "cbqos", "netflow", "voip" };
-
-			foreach (var customPrefix in customPrefixes)
+			if (TryGetCustomPrefix(className, out var prefix))
 			{
-				if (className.StartsWith(customPrefix, StringComparison.InvariantCultureIgnoreCase))
-				{
-					return className[..customPrefix.Length];
-				}
+				return prefix;
 			}
-			
+
 			int prefixIndex = className.IndexOf('_', StringComparison.Ordinal);
 
-			if (prefixIndex == -1)
-			{
-				return null;
-			}
+			return prefixIndex == -1 ? null : className[..prefixIndex];
+		}
 
-			return className[..prefixIndex];
+		private static bool TryGetCustomPrefix(string className, out string? prefix)
+		{
+			prefix = CustomPrefixes.FirstOrDefault(custom => className.StartsWith(custom, StringComparison.InvariantCultureIgnoreCase));
+			return prefix != null;
 		}
 	}
 }
