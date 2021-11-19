@@ -7,8 +7,6 @@ namespace CsvLinqPadDriver
 {
 	internal class FileModel
 	{
-		private const string InvalidCharactersRegex = @"[^\p{Ll}\p{Lu}\p{Lt}\p{Lo}\p{Nd}\p{Nl}\p{Mn}\p{Mc}\p{Cf}\p{Pc}\p{Lm}]";
-		private static readonly Regex Regex = new(InvalidCharactersRegex);
 		private static readonly string[] CustomPrefixes = { "alert", "cbqos", "netflow", "voip" };
 
 		public string? Prefix { get; }
@@ -39,15 +37,20 @@ namespace CsvLinqPadDriver
 		private static string GenerateValidIdentifierName(string filePath)
 		{
 			var result = Path.GetFileNameWithoutExtension(filePath);
+			result = ReplaceInvalidCharacters(result);
+			return PrependUnderscoreIfNeeded(result);
+		}
 
-			result = Regex.Replace(result, "_");
-
-			if (!char.IsLetter(result, 0))
-			{
-				result = result.Insert(0, "_");
-			}
-
-			return result.Replace(" ", string.Empty);
+		private static string ReplaceInvalidCharacters(string input)
+		{
+			const string invalidCharactersRegex = @"[^\p{Ll}\p{Lu}\p{Lt}\p{Lo}\p{Nd}\p{Nl}\p{Mn}\p{Mc}\p{Cf}\p{Pc}\p{Lm}]";
+			return Regex.Replace(input, invalidCharactersRegex, "_", RegexOptions.None, TimeSpan.FromSeconds(1));
+		}
+		
+		private static string PrependUnderscoreIfNeeded(string input)
+		{
+			const string invalidFirstCharactersRegex = @"^([^a-zA-Z_])";
+			return Regex.Replace(input, invalidFirstCharactersRegex, "_$1", RegexOptions.None, TimeSpan.FromSeconds(1));
 		}
 
 		private static string? GetPrefix(string className)
@@ -59,7 +62,7 @@ namespace CsvLinqPadDriver
 
 			int prefixIndex = className.IndexOf('_', StringComparison.Ordinal);
 
-			return prefixIndex == -1 ? null : className[..prefixIndex];
+			return prefixIndex <= 0 ? null : className[..prefixIndex];
 		}
 
 		private static bool TryGetCustomPrefix(string className, out string? prefix)
