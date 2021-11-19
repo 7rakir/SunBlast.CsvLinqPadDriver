@@ -21,5 +21,22 @@ namespace CsvLinqPadDriver.Csv
                 yield return record;
             }
         }
+
+        internal static DataDescription? ReadDataDescription(string path)
+        {
+            using var reader = new StreamReader(path);
+            using var csv = new CsvHelper.CsvReader(reader, Configuration);
+
+            var hasHeader = csv.Read();
+            if (!hasHeader)
+            {
+                return null;
+            }
+			
+            csv.ReadHeader();
+            var hasData = csv.Read();
+
+            return new DataDescription(csv.HeaderRecord, hasData);
+        }
     }
 }
