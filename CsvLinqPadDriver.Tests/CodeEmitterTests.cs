@@ -1,4 +1,3 @@
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Emit;
 using NUnit.Framework;
 using System;
@@ -31,7 +30,7 @@ namespace CsvLinqPadDriver.Tests
 				result = compilation.Emit(stream);
 			}
 
-			var errorMessage = result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).Select(d => d.GetMessage()).Take(5);
+			var errorMessage = result.Diagnostics.Select(d => d.GetMessage());
 
 			Assert.That(result.Success, Is.True, String.Join(Environment.NewLine, errorMessage));
 		}

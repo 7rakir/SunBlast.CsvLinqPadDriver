@@ -7,6 +7,7 @@ namespace CsvLinqPadDriver
 {
 	internal class SchemaBuilder
 	{
+		// collection of multiple categories while each category contains multiple file models
 		private readonly SortedDictionary<string, SortedDictionary<string, FileModel>> schema =
 			new(StringComparer.InvariantCultureIgnoreCase);
 

@@ -20,19 +20,23 @@ namespace CsvLinqPadDriver
 			using var fileStream = File.OpenWrite(assembly.CodeBase!);
 
 			var result = compilation.Emit(fileStream);
+			
+			LogDiagnostics(result);
 
 			if (result.Success)
 			{
 				return;
 			}
 			
-			LogError(result);
 			throw new InvalidOperationException(@"Emitting compilation failed. See '%localappdata%\LINQPad\Logs.LINQPad6\SunBlast.CsvLinqPadDriver.log' for more information.");
 		}
 
 		internal static Compilation GetCompilation(AssemblyName assembly, SyntaxTree syntaxTree)
 		{
-			var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
+			var options = new CSharpCompilationOptions(
+				OutputKind.DynamicallyLinkedLibrary,
+				optimizationLevel: OptimizationLevel.Release,
+				generalDiagnosticOption: ReportDiagnostic.Error);
 
 			var references = GetReferences();
 
@@ -51,12 +55,14 @@ namespace CsvLinqPadDriver
 				.Select(x => MetadataReference.CreateFromFile(x));
 		}
 
-		private static void LogError(EmitResult result)
+		private static void LogDiagnostics(EmitResult result)
 		{
-			var message = string.Join(Environment.NewLine,
-				result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).Select(d => d.GetMessage()));
+			var message = string.Join(Environment.NewLine, result.Diagnostics.Select(d => d.GetMessage()));
 
-			DynamicDriver.WriteToLog(message);
+			if (!String.IsNullOrWhiteSpace(message))
+			{
+				DynamicDriver.WriteToLog(message);
+			}
 		}
 	}
 }
