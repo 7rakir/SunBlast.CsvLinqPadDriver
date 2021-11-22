@@ -1,9 +1,7 @@
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using CsvLinqPadDriver.Tests.Utils;
-using LINQPad.Extensibility.DataContext;
 
 namespace CsvLinqPadDriver.Tests
 {
@@ -15,7 +13,7 @@ namespace CsvLinqPadDriver.Tests
 		{
 			var schemaModel = DataGeneration.GetLargeSchemaModel().ToArray();
 
-			using (DurationAssert.StartNew(20))
+			using (DurationAssert.Milliseconds(20))
 			{
 				_ = DataGeneration.GetSchema(schemaModel).ToArray();
 			}

@@ -15,7 +15,7 @@ namespace CsvLinqPadDriver.Tests.Utils
 			watch = Stopwatch.StartNew();
 		}
 
-		public static DurationAssert StartNew(int expectedMaximumDuration) => new(expectedMaximumDuration);
+		public static DurationAssert Milliseconds(int expectedMaximumMilliseconds) => new(expectedMaximumMilliseconds);
 
 		public void Dispose()
 		{

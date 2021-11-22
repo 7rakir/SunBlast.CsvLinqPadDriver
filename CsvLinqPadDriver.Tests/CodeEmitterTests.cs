@@ -22,7 +22,7 @@ namespace CsvLinqPadDriver.Tests
 
 			EmitResult? result;
 
-			using (DurationAssert.StartNew(2000))
+			using (DurationAssert.Milliseconds(2000))
 			{
 				var compilation = CodeEmitter.GetCompilation(assembly, syntaxTree);
 

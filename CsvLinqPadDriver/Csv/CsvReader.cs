@@ -14,9 +14,8 @@ namespace CsvLinqPadDriver.Csv
 
         public static IEnumerable<T> ReadFile<T>(string path)
         {
-            using var reader = new StreamReader(path);
-            using var csv = new CsvHelper.CsvReader(reader, Configuration);
-            foreach (var record in csv.GetRecords<T>())
+            using var reader = GetReader(path);
+            foreach (var record in reader.GetRecords<T>())
             {
                 yield return record;
             }
@@ -24,19 +23,24 @@ namespace CsvLinqPadDriver.Csv
 
         internal static DataDescription? ReadDataDescription(string path)
         {
-            using var reader = new StreamReader(path);
-            using var csv = new CsvHelper.CsvReader(reader, Configuration);
+            using var reader = GetReader(path);
 
-            var hasHeader = csv.Read();
+            var hasHeader = reader.Read();
             if (!hasHeader)
             {
                 return null;
             }
 			
-            csv.ReadHeader();
-            var hasData = csv.Read();
+            reader.ReadHeader();
+            var hasData = reader.Read();
 
-            return new DataDescription(csv.HeaderRecord, hasData);
+            return new DataDescription(reader.HeaderRecord, hasData);
+        }
+
+        private static CsvHelper.IReader GetReader(string path)
+        {
+            var reader = new StreamReader(path);
+            return new CsvHelper.CsvReader(reader, Configuration);
         }
     }
 }
