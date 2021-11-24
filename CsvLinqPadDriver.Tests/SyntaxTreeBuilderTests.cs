@@ -26,8 +26,6 @@ namespace CsvLinqPadDriver.Tests
 
 			const string expectedOutput = @"using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using CsvLinqPadDriver.Csv;
 using CsvLinqPadDriver.UserExtensions.Dynamic;
 
@@ -72,8 +70,6 @@ namespace TestNamespace
 
 			const string expectedOutput = @"using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using CsvLinqPadDriver.Csv;
 using CsvLinqPadDriver.UserExtensions.Dynamic;
 

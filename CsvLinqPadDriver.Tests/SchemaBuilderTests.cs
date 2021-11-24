@@ -62,7 +62,7 @@ namespace CsvLinqPadDriver.Tests
 			var result = DataGeneration.GetSchema(fileModels).ToArray();
 
 			Assert.That(result[0].Text, Is.EqualTo("netflowUncategorized"));
-			Assert.That(result[1].Text, Is.EqualTo("voip (2)"));
+			Assert.That(result[1].Text, Is.EqualTo("VoIP (2)"));
 			Assert.That(result[1].Children[0].Text, Is.EqualTo("voipFirst"));
 			Assert.That(result[1].Children[1].Text, Is.EqualTo("VoIPSecond"));
 		}
