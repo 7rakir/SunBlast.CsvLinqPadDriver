@@ -24,12 +24,13 @@ This is implemented in `DynamicDriver.ShowConnectionDialog` along with saving
 the `SelectedPath`.
 
 After that, the `DynamicDriver.GetSchemaAndBuildAssembly` is automatically
-called as mentioned in the LINQPad driver documentation:
-1. It uses `ModelReader` to read a schema model from the CSV files.
-2. It then uses the model to generate "syntax tree" using `SyntaxTreeBuilder`
-3. It then uses the model to generate "schema" using `SchemaBuilder`
-4. The generated "syntax tree" is then emitted into provided `assemblyToBuild` using `CodeEmitter`
-5. The generated "schema" is returned to LINQPad
+called as mentioned in the LINQPad driver documentation.
+It uses `DriverResultBuilder` to fluently:
+1. Use `ModelReader` to read a schema model from the CSV files.
+2. Then use the model to build "syntax tree" using `SyntaxTreeBuilder`
+3. Then use the model to build "schema" using `SchemaBuilder`
+4. Emit the built "syntax tree" into provided `assemblyToBuild` using `CodeEmitter`
+5. Return the built "schema" to LINQPad
 
 ### How do they work?
 
@@ -50,7 +51,7 @@ if they are available
 
 #### `SchemaBuilder` – How does LINQPad schema building work?
 Groups the File models into categories based on their prefixes – parts before underscore or before
-a SolarWinds specific prefix (e.g. VoIP). If there is only one File model with the prefix, it is 
+a SolarWinds-specific prefix (e.g. VoIP). If there is only one File model with the prefix, it is 
 not grouped.
 
 1. On each call of `AddModel`, assigns the specific `FileModel` to an existing category or 

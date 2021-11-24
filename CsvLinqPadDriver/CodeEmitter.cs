@@ -57,12 +57,13 @@ namespace CsvLinqPadDriver
 
 		private static void LogDiagnostics(EmitResult result)
 		{
-			var message = string.Join(Environment.NewLine, result.Diagnostics.Select(d => d.GetMessage()));
-
-			if (!String.IsNullOrWhiteSpace(message))
+			if (!result.Diagnostics.Any())
 			{
-				DynamicDriver.WriteToLog(message);
+				return;
 			}
+			
+			var message = string.Join(Environment.NewLine, result.Diagnostics.Select(d => d.GetMessage()));
+			DynamicDriver.WriteToLog(message);
 		}
 	}
 }

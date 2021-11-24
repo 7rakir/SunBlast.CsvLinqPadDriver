@@ -2,7 +2,6 @@ using LINQPad.Extensibility.DataContext;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 
@@ -59,21 +58,12 @@ namespace CsvLinqPadDriver
         public override List<ExplorerItem> GetSchemaAndBuildAssembly(
             IConnectionInfo cxInfo, AssemblyName assemblyToBuild, ref string nameSpace, ref string typeName)
         {
-            string path = cxInfo.DisplayName;
+            string csvFilesPath = cxInfo.DisplayName;
 
-            var syntaxTreeBuilder = new SyntaxTreeBuilder(typeName);
-            var schemaBuilder = new SchemaBuilder();
-
-            foreach (var fileModel in ModelReader.GetSchemaModel(path))
-            {
-                syntaxTreeBuilder.AddModel(fileModel);
-                schemaBuilder.AddModel(fileModel);
-            }
-
-            var tree = syntaxTreeBuilder.Build(nameSpace);
-            CodeEmitter.Emit(tree, assemblyToBuild);
-
-            return schemaBuilder.Build().ToList();
+            return new DriverResultBuilder(ref nameSpace, ref typeName)
+                .ApplyModelFrom(csvFilesPath)
+                .EmitInto(assemblyToBuild)
+                .BuildSchema();
         }
 
         public static void WriteToLog(string message) => WriteToLog(message, "SunBlast.CsvLinqPadDriver.log");
