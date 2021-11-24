@@ -7,7 +7,7 @@ namespace CsvLinqPadDriver
 {
 	internal class FileModel
 	{
-		private static readonly string[] CustomPrefixes = { "alert", "cbqos", "netflow", "voip" };
+		private static readonly string[] CustomPrefixes = { "Alert", "cbQoS", "NetFlow", "VoIP" };
 
 		public string? Prefix { get; }
 
