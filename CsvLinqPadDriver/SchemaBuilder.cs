@@ -13,7 +13,7 @@ namespace CsvLinqPadDriver
 
 		public void AddModel(FileModel fileModel)
 		{
-			var prefix = fileModel.Prefix ?? fileModel.ClassName;
+			var prefix = PrefixProvider.GetPrefix(fileModel);
 			if (!schema.TryGetValue(prefix, out var category))
 			{
 				category = new SortedDictionary<string, FileModel>();
@@ -30,51 +30,82 @@ namespace CsvLinqPadDriver
 				int itemCount = category.Values.Count;
 				if (itemCount == 1)
 				{
-					yield return GetModelExplorerItem(category.Values.Single());
+					yield return ExplorerItemFactory.GetModelExplorerItem(category.Values.Single());
 				}
 				else
 				{
-					yield return GetCategoryExplorerItem($"{prefix} ({itemCount})", category.Values);
+					yield return ExplorerItemFactory.GetCategoryExplorerItem($"{prefix} ({itemCount})", category.Values);
 				}
 			}
 		}
 
-		private static ExplorerItem GetCategoryExplorerItem(string text, IEnumerable<FileModel> fileModels)
+		private static class PrefixProvider
 		{
-			return new(text, ExplorerItemKind.Category, ExplorerIcon.Schema)
+			private static readonly string[] CustomPrefixes = { "Alert", "cbQoS", "NetFlow", "VoIP" };
+			
+			public static string GetPrefix(FileModel model)
 			{
-				Children = fileModels.Select(GetModelExplorerItem).ToList()
-			};
+				return GetPrefix(model.ClassName);
+			}
+			
+			private static string GetPrefix(string className)
+			{
+				if (TryGetCustomPrefix(className, out var prefix))
+				{
+					return prefix!;
+				}
+
+				int prefixIndex = className.IndexOf('_', StringComparison.Ordinal);
+
+				return prefixIndex <= 0 ? className : className[..prefixIndex];
+			}
+
+			private static bool TryGetCustomPrefix(string className, out string? prefix)
+			{
+				prefix = CustomPrefixes.FirstOrDefault(custom => className.StartsWith(custom, StringComparison.InvariantCultureIgnoreCase));
+				return prefix != null;
+			}
 		}
 
-		private static ExplorerItem GetModelExplorerItem(FileModel fileModel)
+		private static class ExplorerItemFactory
 		{
-			if (!fileModel.HasData)
+			public static ExplorerItem GetCategoryExplorerItem(string text, IEnumerable<FileModel> fileModels)
 			{
-				return new($"{fileModel.ClassName}", ExplorerItemKind.Property, ExplorerIcon.Blank)
+				return new(text, ExplorerItemKind.Category, ExplorerIcon.Schema)
 				{
-					IsEnumerable = false,
+					Children = fileModels.Select(GetModelExplorerItem).ToList()
+				};
+			}
+
+			public static ExplorerItem GetModelExplorerItem(FileModel fileModel)
+			{
+				if (!fileModel.HasData)
+				{
+					return new($"{fileModel.ClassName}", ExplorerItemKind.Property, ExplorerIcon.Blank)
+					{
+						IsEnumerable = false,
+						Children = fileModel.Headers.Select(GetPropertyExplorerItem).ToList(),
+						ToolTipText = GetToolTip(fileModel)
+					};
+				}
+			
+				return new($"{fileModel.ClassName}", ExplorerItemKind.QueryableObject, ExplorerIcon.Table)
+				{
+					IsEnumerable = true,
 					Children = fileModel.Headers.Select(GetPropertyExplorerItem).ToList(),
 					ToolTipText = GetToolTip(fileModel)
 				};
 			}
-			
-			return new($"{fileModel.ClassName}", ExplorerItemKind.QueryableObject, ExplorerIcon.Table)
+
+			private static ExplorerItem GetPropertyExplorerItem(string columnName)
 			{
-				IsEnumerable = true,
-				Children = fileModel.Headers.Select(GetPropertyExplorerItem).ToList(),
-				ToolTipText = GetToolTip(fileModel)
-			};
-		}
+				return new(columnName, ExplorerItemKind.Property, ExplorerIcon.Column);
+			}
 
-		private static ExplorerItem GetPropertyExplorerItem(string columnName)
-		{
-			return new(columnName, ExplorerItemKind.Property, ExplorerIcon.Column);
-		}
-
-		private static string GetToolTip(FileModel fileModel)
-		{
-			return $"Length: {fileModel.FileSize:N0} B{Environment.NewLine}Created: {fileModel.CreationTime:s}";
+			private static string GetToolTip(FileModel fileModel)
+			{
+				return $"Length: {fileModel.FileSize:N0} B{Environment.NewLine}Created: {fileModel.CreationTime:s}";
+			}
 		}
 	}
 }

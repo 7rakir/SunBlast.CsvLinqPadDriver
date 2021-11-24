@@ -1,16 +1,11 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace CsvLinqPadDriver
 {
 	internal class FileModel
 	{
-		private static readonly string[] CustomPrefixes = { "Alert", "cbQoS", "NetFlow", "VoIP" };
-
-		public string? Prefix { get; }
-
 		public string ClassName { get; }
 
 		public string FilePath { get; }
@@ -30,8 +25,6 @@ namespace CsvLinqPadDriver
 			(Headers, HasData) = data;
 
 			ClassName = GenerateValidIdentifierName(FilePath);
-
-			Prefix = GetPrefix(ClassName);
 		}
 
 		private static string GenerateValidIdentifierName(string filePath)
@@ -51,24 +44,6 @@ namespace CsvLinqPadDriver
 		{
 			const string invalidFirstCharactersRegex = @"^([^a-zA-Z_])";
 			return Regex.Replace(input, invalidFirstCharactersRegex, "_$1", RegexOptions.None, TimeSpan.FromSeconds(1));
-		}
-
-		private static string? GetPrefix(string className)
-		{
-			if (TryGetCustomPrefix(className, out var prefix))
-			{
-				return prefix;
-			}
-
-			int prefixIndex = className.IndexOf('_', StringComparison.Ordinal);
-
-			return prefixIndex <= 0 ? null : className[..prefixIndex];
-		}
-
-		private static bool TryGetCustomPrefix(string className, out string? prefix)
-		{
-			prefix = CustomPrefixes.FirstOrDefault(custom => className.StartsWith(custom, StringComparison.InvariantCultureIgnoreCase));
-			return prefix != null;
 		}
 	}
 }
